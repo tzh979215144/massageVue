@@ -4,19 +4,29 @@
     <div class="head-container">
       <div v-if="crud.props.searchToggle">
         <!-- 搜索 -->
-        <label class="el-form-item-label">店铺</label>
-        <el-input v-model="query.shopId" clearable placeholder="店铺" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
-        <label class="el-form-item-label">按摩师</label>
-        <el-input v-model="query.massagerId" clearable placeholder="按摩师" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
+        <label class="el-form-item-label">店铺ID</label>
+        <el-select v-model="query.shopId" clearable placeholder="店铺名" style="width: 185px;" class="filter-item" @change="initMassager(query)" @keyup.enter.native="crud.toQuery">
+          <el-option
+            v-for="item in shops"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
+        <label class="el-form-item-label">按摩师ID</label>
+        <el-select v-model="query.massagerId" clearable placeholder="按摩师名" style="width: 185px;" class="filter-item" @change="crud.toQuery" @keyup.enter.native="crud.toQuery">
+          <el-option
+            v-for="item in massagers"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
         <label class="el-form-item-label">上班日期</label>
-        <el-input v-model="query.workDate" clearable placeholder="上班日期" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
         <el-date-picker
-          v-model="query.workTime"
-          type="daterange"
-          value-format="HH:mm:ss"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
+          @change="initMassager(query)"
+          v-model="query.workDate"
+          value-format="yyyy-MM-dd HH:mm:ss"
         />
         <label class="el-form-item-label">迟到等级</label>
         <el-slider
@@ -26,6 +36,7 @@
           :max="5"
         />
         <rrOperation :crud="crud" />
+        <el-button type="success" plain round icon="el-icon-check" size="mini" @click="update(query)">更新工资</el-button>
       </div>
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
       <crudOperation :permission="permission" />
@@ -42,21 +53,26 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="按摩师" prop="massagerId">
-            <el-select v-model="form.massagerId" filterable placeholder="请选择">
-              <el-option
-                v-for="item in massagers"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
+          <el-form-item label="单个按摩师">
+              <el-select v-model="form.massagerId" filterable placeholder="请选择">
+                <el-option
+                  v-for="item in massagers"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+          </el-form-item>
+          <el-form-item label="批量按摩师">
+            <el-checkbox-group v-model="form.massagerIds" @change="handleCheckedCitiesChange">
+              <el-checkbox v-for="item in massagers" :label="item.id" :key="item.id">{{item.name}}</el-checkbox>
+            </el-checkbox-group>
+
           </el-form-item>
           <el-form-item label="上班日期" prop="workDate">
-            <el-date-picker v-model="form.workDate" type="date" style="width: 370px;" />
-          </el-form-item>
-          <el-form-item label="到店时间">
-            <el-time-picker v-model="form.workTime" style="width: 370px;" />
+            <el-date-picker v-model="form.workDate"
+                            value-format="yyyy-MM-dd HH:mm:ss"
+                            type="date" style="width: 370px;" />
           </el-form-item>
           <el-form-item label="迟到等级">
             <el-select v-model="form.lateLevel" filterable placeholder="请选择">
@@ -67,6 +83,9 @@
                 :value="item.value"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item label="工资">
+            <el-input v-model="form.wage" style="width: 370px;" />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -88,12 +107,12 @@
           </template>
         </el-table-column>
         <el-table-column type="date" prop="workDate" label="上班日期" />
-        <el-table-column prop="workTime" label="到店时间" />
         <el-table-column prop="lateLevel" label="迟到等级">
           <template slot-scope="scope">
             {{ dict.label.late_level[scope.row.lateLevel] }}
           </template>
         </el-table-column>
+        <el-table-column prop="wage" label="工资" />
         <el-table-column v-if="checkPer(['admin','shopMassager:edit','shopMassager:del'])" label="操作" width="150px" align="center">
           <template slot-scope="scope">
             <udOperation
@@ -111,6 +130,7 @@
 
 <script>
 import crudShopMassager from '@/api/massage/shopMassager'
+import { updateWage } from '@/api/massage/shopMassager'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
 import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
@@ -118,8 +138,9 @@ import udOperation from '@crud/UD.operation'
 import pagination from '@crud/Pagination'
 import { getMassagers } from '@/api/massage/massager'
 import { getShops } from '@/api/massage/shop'
+import moment from 'moment'
 
-const defaultForm = { id: null, shopId: null, massagerId: null, workDate: null, workTime: null, lateLevel: 0 }
+const defaultForm = { id: null, shopId: 1, massagerId: null, workDate: new Date(), lateLevel: '0',massagerIds:[],wage: null }
 export default {
   name: 'ShopMassager',
   components: { pagination, crudOperation, rrOperation, udOperation },
@@ -152,24 +173,37 @@ export default {
         { key: 'workDate', display_name: '上班日期' }
       ],
       massagers: [],
-      shops: []
+      shops: [],
+      isIndeterminate: true,
+      checkAll: false,
+      filterParam: {
+        shopId: 1,
+        nowDay: new Date()
+      },
     }
   },
   mounted() {
-    this.initMassager()
+    this.initMassager(this.query)
+  },
+  created() {
+    this.query.shopId = 1
+    this.$set(this.query,'workDate',moment(new Date().setHours(0,0,0)).format('YYYY-MM-DD HH:mm:ss'))
   },
   methods: {
     // 钩子：在获取表格数据之前执行，false 则代表不获取数据
     [CRUD.HOOK.beforeRefresh]() {
       return true
     },
-    initMassager: function() {
+    initMassager: function(queryParam) {
+      console.log(queryParam.workDate)
       getMassagers().then(data => {
         this.massagers = data.content
       })
       getShops().then(data => {
         this.shops = data.content
       })
+      this.update(queryParam)
+      this.crud.toQuery(queryParam)
     },
     massagerName(id) {
       const result = this.massagers.find(item => item.id == id)
@@ -184,6 +218,29 @@ export default {
         return id + '号店铺不存在'
       }
       return result.name
+    },
+    handleCheckedCitiesChange(value) {
+      let checkedCount = value.length;
+      this.checkAll = (checkedCount === this.massagers.length);
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.massagers.length;
+    },
+    update(data) {
+      if (data.shopId !== undefined) {
+        this.filterParam.shopId = data.shopId
+      }
+      if (data.workDate !== undefined) {
+        this.filterParam.nowDay = data.workDate
+      }
+      let param = this.filterParam
+      updateWage(param).then(data => {
+        this.$notify({
+          title: '已更新工资',
+          type: 'success',
+          duration: 2500
+        })
+        // 使用this才可以调用crud的方法
+        this.crud.refresh()
+      })
     }
   }
 }

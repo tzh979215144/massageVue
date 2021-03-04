@@ -1,8 +1,9 @@
 import request from '@/utils/request'
-export function getGuests() {
+export function getGuests(data) {
   return request({
     url: 'api/guest',
-    method: 'get'
+    method: 'get',
+    data
   })
 }
 export function add(data) {

@@ -32,7 +32,7 @@ function CRUD(options) {
     // 重置表单
     defaultForm: () => {},
     // 排序规则，默认 id 降序， 支持多字段排序 ['id,desc', 'createTime,asc']
-    sort: ['id,desc'],
+    sort: ['startTime,desc'],
     // 等待时间
     time: 50,
     // CRUD Method
@@ -91,7 +91,7 @@ function CRUD(options) {
       // 页码
       page: 0,
       // 每页数据条数
-      size: 10,
+      size: 80,
       // 总数据条数
       total: 0
     },

@@ -20,7 +20,7 @@
         <label class="el-form-item-label">等级</label>
         <el-input v-model="query.level" clearable placeholder="等级" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
         <label class="el-form-item-label">是否持证</label>
-        <el-input v-model="query.isdiplomate" clearable placeholder="是否持证" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
+        <el-input v-model="query.isDiplomate" clearable placeholder="是否持证" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
         <rrOperation :crud="crud" />
       </div>
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
@@ -51,8 +51,8 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="是否持证" prop="isdiplomate">
-            <el-select v-model="form.isdiplomate" filterable placeholder="请选择">
+          <el-form-item label="是否持证" prop="isDiplomate">
+            <el-select v-model="form.isDiplomate" filterable placeholder="请选择">
               <el-option
                 v-for="item in dict.is_holder"
                 :key="item.id"
@@ -60,6 +60,9 @@
                 :value="item.value"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item label="底薪">
+            <el-input-number v-model="form.wage"  :step="10" :min="0" :max="150" :rows="3" style="width: 195px;" />
           </el-form-item>
           <el-form-item label="备注信息">
             <el-input v-model="form.info" :rows="3" type="textarea" style="width: 370px;" />
@@ -84,11 +87,12 @@
             {{ dict.label.massage_level[scope.row.level] }}
           </template>
         </el-table-column>
-        <el-table-column prop="isdiplomate" label="是否持证">
+        <el-table-column prop="isDiplomate" label="是否持证">
           <template slot-scope="scope">
-            {{ dict.label.is_holder[scope.row.isdiplomate] }}
+            {{ dict.label.is_holder[scope.row.isDiplomate] }}
           </template>
         </el-table-column>
+        <el-table-column prop="wage" label="底薪"/>
         <el-table-column prop="info" label="备注信息" />
         <el-table-column v-if="checkPer(['admin','massager:edit','massager:del'])" label="操作" width="150px" align="center">
           <template slot-scope="scope">
@@ -113,7 +117,7 @@ import crudOperation from '@crud/CRUD.operation'
 import udOperation from '@crud/UD.operation'
 import pagination from '@crud/Pagination'
 
-const defaultForm = { id: null, name: null, sex: null, level: null, isdiplomate: null, info: null }
+const defaultForm = { id: null, name: null, sex: null, level: null, isDiplomate: null, wage: null, info: null }
 export default {
   name: 'Massager',
   components: { pagination, crudOperation, rrOperation, udOperation },
@@ -139,7 +143,7 @@ export default {
         level: [
           { required: true, message: '等级不能为空', trigger: 'blur' }
         ],
-        isdiplomate: [
+        isDiplomate: [
           { required: true, message: '是否持证不能为空', trigger: 'blur' }
         ]
       },
@@ -147,7 +151,7 @@ export default {
         { key: 'name', display_name: '姓名' },
         { key: 'sex', display_name: '性别' },
         { key: 'level', display_name: '等级' },
-        { key: 'isdiplomate', display_name: '是否持证' }
+        { key: 'isDiplomate', display_name: '是否持证' }
       ]
     }
   },

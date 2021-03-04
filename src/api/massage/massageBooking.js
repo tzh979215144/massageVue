@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function confirm(data) {
+  return request({
+    url: '/api/massageBooking/confirm',
+    method: 'post',
+    data
+  })
+}
+
 export function add(data) {
   return request({
     url: 'api/massageBooking',

@@ -18,6 +18,22 @@
         <div>超时警告</div>
       </div>
     </div>
+    <label class="el-form-item-label">店铺</label>
+    <el-select v-model="filterParam.shopId" @change="initMassager(filterParam)" filterable placeholder="请选择">
+      <el-option
+        v-for="item in shops"
+        :key="item.id"
+        :label="item.name"
+        :value="item.id"
+      />
+    </el-select>
+    <label class="el-form-item-label">时间</label>
+    <el-date-picker
+      v-model="filterParam.nowDay"
+      @change="initMassager(filterParam)"
+    />
+    <el-button type="success" plain round icon="el-icon-check" size="mini" @click="initMassager(filterParam)">更新</el-button>
+    <br />
     <el-timeline id="timeLineDate" style="margin-left: 100px; margin-top: 10px;">
       <el-timeline-item
         v-for="(activity, index) in activities"
@@ -40,14 +56,21 @@
 <script>
 // import { businessProcess } from '@/api/dataGovern'
 // import CommonTitle from '@/components/dataGovern/common/commonTitle'
+import { getShops } from '@/api/massage/shop'
 import { getTimeShow } from '@/api/massage/timeShow'
 import timeLine from './timeLine'
 export default {
   components: { timeLine },
   data() {
     return {
+      filterParam: {
+        shopId: 1,
+        nowDay: new Date()
+      },
       openAccountProcessLoading: false,
       activities: [],
+      shops: [],
+
       activitiess: [
         {
           massager: 'Amy',
@@ -63,125 +86,35 @@ export default {
                 { timestamp: '11:00', status: 'wating', info: '要求加时20分钟' }
               ]
             },
-            {
-              status: 'finish',
-              startTime: '10：30',
-              endTime: '11: 20',
-              duration: 50,
-              info: '普通'
-            },
-            {
-              status: 'finish',
-              startTime: '11：30',
-              endTime: '12: 30',
-              duration: 60,
-              info: '普通'
-            },
-            {
-              status: 'finish',
-              startTime: '12：40',
-              endTime: '13: 20',
-              duration: 40,
-              info: '老客'
-            },
-            {
-              status: 'being',
-              startTime: '14：50',
-              endTime: '15: 40',
-              duration: 50,
-              info: '普通'
-            },
-            {
-              status: 'wating',
-              startTime: '15：50',
-              endTime: '16: 20',
-              duration: 30,
-              info: '普通'
-            },
-            {
-              status: 'wating',
-              startTime: '16：30',
-              endTime: '17: 30',
-              duration: 60,
-              info: '保险'
-            }
           ]
         },
-        {
-          massager: 'Rong',
-          timeLineList: [
-            {
-              status: '',
-              startTime: '09：00',
-              endTime: '10: 20',
-              duration: 80,
-              info: '保险',
-              timeLineBranch: [
-                { timestamp: '10:00', status: 'being', info: '开始' },
-                { timestamp: '11:00', status: 'wating', info: '要求加时20分钟' }
-              ]
-            },
-            {
-              status: 'finish',
-              startTime: '10：30',
-              endTime: '11: 20',
-              duration: 50,
-              info: '普通'
-            },
-            {
-              status: 'finish',
-              startTime: '11：30',
-              endTime: '12: 30',
-              duration: 60,
-              info: '普通'
-            },
-            {
-              status: 'finish',
-              startTime: '12：40',
-              endTime: '13: 20',
-              duration: 40,
-              info: '老客'
-            },
-            {
-              status: 'being',
-              startTime: '14：50',
-              endTime: '15: 40',
-              duration: 50,
-              info: '普通'
-            },
-            {
-              status: 'wating',
-              startTime: '15：50',
-              endTime: '16: 20',
-              duration: 30,
-              info: '普通'
-            },
-            {
-              status: 'wating',
-              startTime: '16：30',
-              endTime: '17: 30',
-              duration: 60,
-              info: '保险'
-            }
-          ]
-        }
       ]
     }
   },
   created() {
-    this.initMassager()
+    this.initMassager(this.filterParam)
   },
   methods: {
-    initMassager: function() {
-      getTimeShow().then(data => {
-        console.log(data)
-        this.activities = data
-        for (var i = 0; i < this.activities.length; i++) {
-          for (var j = 0; j < this.activities[i].timeLineList.length; j++) {
-            this.activities[i].timeLineList[j].startTime = this.activities[i].timeLineList[j].startTime.slice(11)
-            this.activities[i].timeLineList[j].endTime = this.activities[i].timeLineList[j].endTime.slice(11)
+    shopName(id) {
+      const result = this.shops.find(item => item.id == id)
+      if (typeof result === 'undefined') {
+        return id + '号店铺不存在'
+      }
+      return result.name
+    },
+    initMassager: function(filterParam) {
+      getShops().then(data => {
+        this.shops = data.content
+      })
+      getTimeShow(filterParam).then(data => {
+        console.log(filterParam)
+        for (let i = 0; i < data.length; i++) {
+          for (let j = 0; j < data[i].timeLineList.length; j++) {
+            data[i].timeLineList[j].startTime = (''+data[i].timeLineList[j].startTime).substr(11)
+            data[i].timeLineList[j].endTime = (''+data[i].timeLineList[j].endTime).substr(11)
           }
         }
+        this.activities = data
       })
     }
   }

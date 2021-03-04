@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function getWorkMassagers(data) {
+  return request({
+    url: 'api/massagerAllot/workMassagers',
+    method: 'put',
+    data
+  })
+}
+
 export function add(data) {
   return request({
     url: 'api/shopMassager',
@@ -24,4 +32,12 @@ export function edit(data) {
   })
 }
 
+
+export function updateWage(data) {
+  return request({
+    url: 'api/wage/update',
+    method: 'put',
+    data
+  })
+}
 export default { add, edit, del }

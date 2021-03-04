@@ -1,9 +1,10 @@
 import request from '@/utils/request'
 
-export function getTimeShow() {
+export function getTimeShow(data) {
   return request({
     url: 'api/time',
-    method: 'get'
+    method: 'put',
+    data
   })
 }
 

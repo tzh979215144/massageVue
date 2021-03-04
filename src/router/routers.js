@@ -69,21 +69,12 @@ export const constantRouterMap = [
     },
     children: [
       {
-        path: 'record',
-        component: (resolve) => require(['@/views/massage/record'], resolve),
-        name: 'record',
+        path: 'shopMassager',
+        component: (resolve) => require(['@/views/massage/shopMassager'], resolve),
+        name: 'shopMassager',
         meta: {
-          title: '按摩记录',
-          icon: 'backup'
-        }
-      },
-      {
-        path: 'guest',
-        component: (resolve) => require(['@/views/massage/guest'], resolve),
-        name: 'guest',
-        meta: {
-          title: '客人信息',
-          icon: 'visits'
+          title: '店铺员工分配',
+          icon: 'Steve-Jobs'
         }
       },
       {
@@ -96,12 +87,21 @@ export const constantRouterMap = [
         }
       },
       {
-        path: 'shop',
-        component: (resolve) => require(['@/views/massage/shop'], resolve),
-        name: 'shop',
+        path: 'record',
+        component: (resolve) => require(['@/views/massage/record'], resolve),
+        name: 'record',
         meta: {
-          title: '店铺信息',
-          icon: 'list'
+          title: '按摩记录',
+          icon: 'backup'
+        }
+      },
+      {
+        path: 'timeLine',
+        component: (resolve) => require(['@/views/massage/timeLine'], resolve),
+        name: 'timeLine',
+        meta: {
+          title: '员工时间线',
+          icon: 'Steve-Jobs'
         }
       },
       {
@@ -114,23 +114,24 @@ export const constantRouterMap = [
         }
       },
       {
-        path: 'shopMassager',
-        component: (resolve) => require(['@/views/massage/shopMassager'], resolve),
-        name: 'shopMassager',
+        path: 'shop',
+        component: (resolve) => require(['@/views/massage/shop'], resolve),
+        name: 'shop',
         meta: {
-          title: '店铺员工分配',
-          icon: 'Steve-Jobs'
+          title: '店铺信息',
+          icon: 'list'
         }
       },
       {
-        path: 'timeLine',
-        component: (resolve) => require(['@/views/massage/timeLine'], resolve),
-        name: 'timeLine',
+        path: 'guest',
+        component: (resolve) => require(['@/views/massage/guest'], resolve),
+        name: 'guest',
         meta: {
-          title: '员工时间线',
-          icon: 'Steve-Jobs'
+          title: '客人信息',
+          icon: 'visits'
         }
-      }
+      },
+
     ]
   }
 ]
