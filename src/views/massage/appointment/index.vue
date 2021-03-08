@@ -16,7 +16,7 @@
         <label class="el-form-item-label">按摩师ID</label>
         <el-select v-model="query.massagerId" clearable placeholder="按摩师名" style="width: 185px;" class="filter-item" @change="crud.toQuery" @keyup.enter.native="crud.toQuery">
           <el-option
-            v-for="item in massagers"
+            v-for="item in workMassagers"
             :key="item.id"
             :label="item.name"
             :value="item.id"
@@ -70,27 +70,15 @@
             </el-select>
           </el-form-item>
           <el-form-item label="按摩师" prop="massagerId">
-            <el-select v-model="form.massagerId" filterable placeholder="请选择">
+            <el-select v-model="form.massagerId" filterable placeholder="请选择" @change="this.form.remedialId=this.form.massagerId" style="width: 150px;">
               <el-option
-                v-for="item in massagers"
+                v-for="item in workMassagers"
                 :key="item.id"
                 :label="item.name"
                 :value="item.id"
               />
             </el-select>
-          </el-form-item>
-          <el-form-item label="客人">
-            <el-select v-model="form.guestId" filterable placeholder="请选择">
-              <el-option
-                v-for="item in guests"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="是否指定按摩师">
-            <el-select v-model="form.isAssign" filterable placeholder="请选择">
+            <el-select v-model="form.isAssign" filterable placeholder="请选择" style="width: 150px;">
               <el-option
                 v-for="item in dict.is_assign"
                 :key="item.id"
@@ -99,20 +87,19 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="按摩时长（按分钟算）" prop="duration">
+          <el-divider content-position="left"><i class="el-icon-bell"></i></el-divider>
+          <el-form-item label="按摩时长" prop="duration">
             <el-input-number
               v-model="form.duration"
-              :step="5" :min="0" :max="150" :rows="3" style="width: 195px;"
-              @change="countEndTime($event,'duration')"
+              :step="5" :min="0" :max="150" :rows="3" style="width: 150px;"
+              @change="countEndTime(form)"
             />
+            <el-tooltip :content="'加时'" placement="top">
+              <el-input-number v-model="form.extraTime"  placeholder="加时" :step="5" :min="0" :max="150" :rows="3" style="width: 150px;" @change="countEndTime(form)" />
+            </el-tooltip>
+
           </el-form-item>
-          <el-form-item label="加时时长">
-            <el-input-number v-model="form.extraTime"  :step="5" :min="0" :max="150" :rows="3" style="width: 195px;" @change="countEndTime($event,'extraTime')" />
-          </el-form-item>
-          <el-form-item label="备注">
-            <el-input v-model="form.info" :rows="3" type="textarea" style="width: 370px;" />
-          </el-form-item>
-          <el-form-item label="预约开始时间">
+          <el-form-item label="预约时间" prop="time">
             <el-time-select
               v-model="form.time"
               default-value="12:30"
@@ -122,14 +109,22 @@
                 step: '00:05',
                 end: '20:30'
               }"
-              style="width: 370px;"
+              style="width: 120px;"
               @change="countStartTime($event)"
             />
+            <el-date-picker v-model="form.endTime" type="datetime" style="width: 180px;" />
           </el-form-item>
-          <el-form-item label="预计结束时间">
-            <el-date-picker v-model="form.endTime" type="datetime" style="width: 370px;" />
-          </el-form-item>
-          <el-form-item label="保险">
+          <el-divider content-position="left"><i class="el-icon-s-custom"></i></el-divider>
+          <el-form-item label="客人保险">
+            <el-select v-model="form.guestId" filterable placeholder="请选择" style="width: 150px;">
+              <el-option
+                v-for="item in guests"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+                style="width: 150px;"
+              />
+            </el-select>
             <el-tooltip :content="'是否是保险'" placement="top">
               <el-switch
                 v-model="form.insuranceStatus"
@@ -139,6 +134,9 @@
                 inactive-value="N">
               </el-switch>
             </el-tooltip>
+          </el-form-item>
+          <el-form-item label="备注">
+            <el-input v-model="form.info" :rows="3" type="textarea" style="width: 370px;" />
           </el-form-item>
           <el-form-item label="预约状态">
             <el-select v-model="form.status" filterable placeholder="请选择">
@@ -167,7 +165,15 @@
         </el-table-column>
         <el-table-column prop="massagerId" label="按摩师">
           <template slot-scope="scope">
-            {{ massagerName(scope.row.massagerId) }}
+<!--            {{ massagerName(scope.row.massagerId) }}-->
+            <el-select v-model="scope.row.massagerId" filterable placeholder="请选择" @change="crud.crudMethod.edit(scope.row)" style="width: 80px;">
+              <el-option
+                v-for="item in workMassagers"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
+            </el-select>
           </template>
         </el-table-column>
         <el-table-column prop="guestId" label="客人">
@@ -281,7 +287,7 @@ export default {
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['is_assign', 'appointment_status'],
   cruds() {
-    return CRUD({ title: 'appointment', url: 'api/massageBooking', idField: 'id', sort: 'id,desc', crudMethod: { ...crudMassageBooking }})
+    return CRUD({ title: 'appointment', url: 'api/massageBooking', idField: 'id', sort: ['startTime,asc','id,desc'], crudMethod: { ...crudMassageBooking }})
   },
   data() {
     return {
@@ -298,7 +304,10 @@ export default {
           { required: true, message: '按摩师ID不能为空', trigger: 'blur' }
         ],
         duration: [
-          { required: true, message: '按摩时长（按分钟算）不能为空', trigger: 'blur' }
+          { required: true, message: '按摩时长不能为空', trigger: 'blur' }
+        ],
+        time: [
+          { required: true, message: '请调整时间', trigger: 'blur' }
         ]
       },
       queryTypeOptions: [
@@ -333,14 +342,14 @@ export default {
     }
   },
   mounted() {
-    this.countEndTime(1,'init')
+    this.countEndTime(this.form)
     this.initMassager(this.query)
   },
   computed: {
   },
   created() {
-    this.query.shopId = 1
-    this.query.status="0"
+    this.$set(this.query,'status',"0")
+    this.$set(this.query,'shopId',1)
     this.$set(this.query,'startTime',this.initDate)
   },
   methods: {
@@ -440,18 +449,11 @@ export default {
       d.setTime(Date.parse(this.form.startTime) + 60000 * (this.form.duration+this.form.extraTime))
       this.form.endTime = moment(d).format('YYYY-MM-DD HH:mm:ss')
     },
-    countEndTime(event,type) {
-      if (type === 'duration') {
-        this.form.duration = event
-      }
-      if (type === 'extraTime') {
-        this.form.extraTime = event
-      }
-      if(type === 'init'){
-      }
+    countEndTime(data) {
       var d = new Date()
-      d.setTime(Date.parse(this.form.startTime) + 60000 * (this.form.duration+this.form.extraTime))
-      this.form.endTime = d
+      d.setTime(Date.parse(data.startTime) + 60000 * (data.duration+data.extraTime))
+      data.endTime = d
+      console.log(data)
     },
     andTime(data) {
       var d = new Date()

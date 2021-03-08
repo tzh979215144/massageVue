@@ -2,8 +2,11 @@
   <div class="login" :style="'background-image:url('+ Background +');'">
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" label-position="left" label-width="0px" class="login-form">
       <h3 class="title">
-        EL-ADMIN 后台管理系统
+        All around 后台管理系统
       </h3>
+      <h4 class="cathy">
+        To Cathy
+      </h4>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
@@ -171,6 +174,11 @@ export default {
     margin: 0 auto 30px auto;
     text-align: center;
     color: #707070;
+  }
+  .cathy {
+    margin: 0 auto 30px auto;
+    text-align: center;
+    color: #ed81b7;
   }
 
   .login-form {

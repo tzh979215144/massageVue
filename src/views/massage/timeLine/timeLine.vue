@@ -40,7 +40,7 @@
             <div class="item_bottom">
               <div
                 class="itemBot_list"
-                :style="{backgroundColor:(timeLineList[index].status =='finish' ? '#65bdaf' :(timeLineList[index].status =='3'?'#eabd60':(timeLineList[index].status =='0'?'#e2e9f9':(timeLineList[index].status =='4'?'#ce3820':''))))}"
+                :style="{backgroundColor:(timeLineList[index].status =='2' ? '#65bdaf' :(timeLineList[index].status =='1'?'#eabd60':(timeLineList[index].status =='0'?'#e2e9f9':(timeLineList[index].status =='4'?'#ce3820':''))))}"
               >{{ timeLineList[index].info }}</div>
             </div>
           </el-tooltip>
@@ -56,7 +56,7 @@
                 :timestamp="itemBranch.timestamp"
               >
                 <!-- {{itemBranch.info}} -->
-                <div :style="{color:(itemBranch.status =='finish' ? '#65bdaf' :(itemBranch.status =='being'?'#eabd60':(itemBranch.status =='wating'?'#e2e9f9':(itemBranch.status =='timeOut'?'#ce3820':''))))}">{{ itemBranch.info }}</div>
+                <div :style="{color:(itemBranch.status =='2' ? '#65bdaf' :(itemBranch.status =='1'?'#eabd60':(itemBranch.status =='0'?'#e2e9f9':(itemBranch.status =='4'?'#ce3820':''))))}">{{ itemBranch.info }}</div>
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -79,7 +79,7 @@
             <div class="item_bottom">
               <div
                 class="itemBot_list"
-                :style="{backgroundColor:(timeLineList[timeLineList.length-1].status =='finish' ? '#65bdaf' :(timeLineList[timeLineList.length-1].status =='being'?'#eabd60':(timeLineList[timeLineList.length-1].status =='wating'?'#e2e9f9':(timeLineList[timeLineList.length-1].status =='timeOut'?'#ce3820':''))))}"
+                :style="{backgroundColor:(timeLineList[timeLineList.length-1].status =='finish' ? '#65bdaf' :(timeLineList[timeLineList.length-1].status =='4'?'#eabd60':(timeLineList[timeLineList.length-1].status =='wating'?'#e2e9f9':(timeLineList[timeLineList.length-1].status =='timeOut'?'#ce3820':''))))}"
               >{{ timeLineList[timeLineList.length-1].info }}</div>
             </div>
           </el-tooltip>
@@ -94,7 +94,7 @@
                 :key="indexBranch"
                 :timestamp="itemBranch.timestamp"
               >
-                <div :style="{color:(itemBranch.status =='finish' ? '#65bdaf' :(itemBranch.status =='being'?'#eabd60':(itemBranch.status =='wating'?'#e2e9f9':(itemBranch.status =='timeOut'?'#ce3820':''))))}">{{ itemBranch.info }}</div>
+                <div :style="{color:(itemBranch.status =='2' ? '#65bdaf' :(itemBranch.status =='1'?'#eabd60':(itemBranch.status =='0'?'#e2e9f9':(itemBranch.status =='4'?'#ce3820':''))))}">{{ itemBranch.info }}</div>
               </el-timeline-item>
               <!-- <el-timeline-item timestamp="2018/4/12"></el-timeline-item> -->
             </el-timeline>
@@ -149,7 +149,7 @@
             <div class="item_bottom">
               <div
                 class="itemBot_list"
-                :style="{backgroundColor:(timeLineList[index].status =='finish' ? '#65bdaf' :(timeLineList[index].status =='being'?'#eabd60':(timeLineList[index].status =='wating'?'#e2e9f9':(timeLineList[index].status =='timeOut'?'#ce3820':''))))}"
+                :style="{backgroundColor:(timeLineList[index].status =='2' ? '#65bdaf' :(timeLineList[index].status =='1'?'#eabd60':(timeLineList[index].status =='0'?'#e2e9f9':(timeLineList[index].status =='4'?'#ce3820':''))))}"
               >{{ timeLineList[index].info }}</div>
             </div>
           </el-tooltip>
@@ -164,7 +164,7 @@
                 :key="indexBranch"
                 :timestamp="itemBranch.timestamp"
               >
-                <div :style="{color:(itemBranch.status =='finish' ? '#65bdaf' :(itemBranch.status =='being'?'#eabd60':(itemBranch.status =='wating'?'#e2e9f9':(itemBranch.status =='timeOut'?'#ce3820':''))))}">{{ itemBranch.info }}</div>
+                <div :style="{color:(itemBranch.status =='2' ? '#65bdaf' :(itemBranch.status =='1'?'#eabd60':(itemBranch.status =='0'?'#e2e9f9':(itemBranch.status =='4'?'#ce3820':''))))}">{{ itemBranch.info }}</div>
               </el-timeline-item>
             </el-timeline>
           </div>
@@ -287,7 +287,7 @@ export default {
     border-bottom: 1px solid #dcdfe6;
     margin-bottom: 9px;
     box-sizing: border-box;
-    min-width: 100px;
+    min-width: 10px;
   }
   .item_top {
     //   flex: 1;
@@ -335,6 +335,7 @@ export default {
   }
 </style>
 <style lang="scss">
+
   .timeLineClass {
     .timeLineBranch {
       // display: flex;

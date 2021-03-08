@@ -15,7 +15,7 @@
       </div>
       <div class="timeLineItem">
         <div class="timeOut timeLineStatus" />
-        <div>超时警告</div>
+        <div>预约迟到预警</div>
       </div>
     </div>
     <label class="el-form-item-label">店铺</label>
@@ -34,7 +34,7 @@
     />
     <el-button type="success" plain round icon="el-icon-check" size="mini" @click="initMassager(filterParam)">更新</el-button>
     <br />
-    <el-timeline id="timeLineDate" style="margin-left: 100px; margin-top: 10px;">
+    <el-timeline id="timeLineDate" style="margin-left: 100px; margin-top: 30px;">
       <el-timeline-item
         v-for="(activity, index) in activities"
         :key="index"
@@ -110,8 +110,8 @@ export default {
         console.log(filterParam)
         for (let i = 0; i < data.length; i++) {
           for (let j = 0; j < data[i].timeLineList.length; j++) {
-            data[i].timeLineList[j].startTime = (''+data[i].timeLineList[j].startTime).substr(11)
-            data[i].timeLineList[j].endTime = (''+data[i].timeLineList[j].endTime).substr(11)
+            data[i].timeLineList[j].startTime = (''+data[i].timeLineList[j].startTime).substr(11,5)
+            data[i].timeLineList[j].endTime = (''+data[i].timeLineList[j].endTime).substr(11,5)
           }
         }
         this.activities = data
@@ -142,6 +142,9 @@ export default {
   // }
   .processInfo {
     background-color: #fff;
+  }
+  .processInfo .el-timeline-item {
+    padding-bottom: 50px;
   }
   .timeLineTitle {
     display: flex;
