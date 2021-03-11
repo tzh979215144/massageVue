@@ -53,6 +53,24 @@
       </div>
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
       <crudOperation :permission="permission" />
+      <label class="el-form-item-label">预约时间</label>
+      <el-time-select
+        v-model="tableFilter.startTime"
+        default-value="12:30"
+        value-format="HH:mm"
+        :picker-options="{
+                start: '08:30',
+                step: '00:05',
+                end: '20:30'
+              }"
+        style="width: 120px;"
+      />
+      <label class="el-form-item-label">时长</label>
+      <el-input-number
+        v-model="tableFilter.duration"
+        :step="5" :min="0" :max="150" :rows="3" style="width: 150px;"
+      />
+      <el-button :loading="crud.status.cu === 2" type="success" plain round icon="el-icon-check" size="mini" @click="handlesearch(crud.data)">查询时间安排</el-button>
       <!--表单组件-->
       <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="500px">
         <el-form :inline="true" ref="form" :model="form" :rules="rules" size="small" label-width="80px">
@@ -67,13 +85,16 @@
             </el-select>
           </el-form-item>
           <el-form-item label="按摩师" prop="massagerId">
-            <el-select v-model="form.massagerId" filterable placeholder="请选择" @change="this.form.remedialId=this.form.massagerId" style="width: 150px;">
+            <el-select v-model="form.massagerId" filterable placeholder="请选择" @focus="updateWorkMassagers(query)" @change="this.form.remedialId=this.form.massagerId" style="width: 150px;">
               <el-option
                 v-for="item in workMassagers"
                 :key="item.id"
                 :label="item.name"
                 :value="item.id"
-              />
+              :class="{Ing:item.status == 'Ing'}">
+                <span style="float: left">{{ item.name }}</span>
+                <span v-if="{Ing:item.status == 'Ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.status }}</span>
+              </el-option>
             </el-select>
             <el-select v-model="form.isAssign" filterable placeholder="请选择" style="width: 150px;">
               <el-option
@@ -114,14 +135,14 @@
           <el-divider content-position="left"><i class="el-icon-bank-card"></i></el-divider>
           <el-form-item label="现金刷卡">
             <el-tooltip :content="'现金'" placement="top">
-              <el-input-number v-model="form.cash"  :precision="2" style="width: 150px;" @change="updateFormIncome(form)"/>
+              <el-input-number v-model="form.cash"  :precision="2" :min="0" style="width: 150px;" @change="updateFormIncome(form)"/>
             </el-tooltip>
             <el-tooltip :content="'刷卡'" placement="top">
-              <el-input-number v-model="form.card" :precision="2" style="width: 150px;" @change="updateFormIncome(form)"/>
+              <el-input-number v-model="form.card" :precision="2" :min="0" style="width: 150px;" @change="updateFormIncome(form)"/>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="保险">
-            <el-input-number v-model="form.insurance" :precision="2" style="width: 150px;" @change="updateFormIncome(form)"/>
+            <el-input-number v-model="form.insurance" :precision="2" :min="0" style="width: 150px;" @change="updateFormIncome(form)"/>
             <el-select v-model="form.remedialId" style="width: 110px;" filterable placeholder="请选择">
               <el-option
                 v-for="item in remedialMassagers"
@@ -173,7 +194,7 @@
         </div>
       </el-dialog>
       <!--表格渲染-->
-      <el-table show-summary :summary-method="getSummaries" ref="table" v-loading="crud.loading" :data="crud.data"
+      <el-table show-summary :summary-method="getSummaries" ref="table" v-loading="crud.loading" :data="handlesearch(crud.data)"
                 :row-class-name="tableRowClassName" size="small" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
         <el-table-column align="center"  type="selection" width="55" />
         <el-table-column align="center" prop="shopId" label="店铺ID">
@@ -360,6 +381,11 @@ export default {
         shopId: 1,
         nowDay: new Date()
       },
+      tableFilter:{
+        startTime:null,
+        duration:null,
+        endTime:null
+      },
       initDate:[
         moment(new Date().setHours(0,0,0)).format('YYYY-MM-DD HH:mm:ss'),
         moment(new Date().setHours(23,59,59)).format('YYYY-MM-DD HH:mm:ss')
@@ -380,6 +406,26 @@ export default {
     // 钩子：在获取表格数据之前执行，false 则代表不获取数据
     [CRUD.HOOK.beforeRefresh]() {
       return true
+    },
+    updateWorkMassagers: function(queryParam) {
+      if (queryParam.shopId !== undefined && queryParam.shopId !== null) {
+        this.filterParam.shopId = queryParam.shopId
+      }
+      if (queryParam.startTime !== undefined && queryParam.startTime !== null) {
+        this.filterParam.nowDay = queryParam.startTime[0]
+      }
+      let param = this.filterParam
+      getWorkMassagers(param).then(data => {
+        if (data == undefined || data.length == 0) {
+          return;
+        }
+        this.workMassagers = [{
+          id:16,
+          name:"默认"
+        }].concat(data)
+
+      })
+      console.log('dddd')
     },
     initMassager: function(queryParam) {
       if (queryParam.shopId !== undefined&&queryParam.shopId !==null) {
@@ -587,6 +633,56 @@ export default {
       });
 
       return sums;
+    },
+    handlesearch: function() { //第30行调用了该方法
+      if (this.tableFilter.startTime == null) {
+        return this.crud.data
+      }
+      let countDoing = 0;
+      let filterStartTime = this.tableFilter.startTime.split(':').join('')
+      let hours = parseInt(this.tableFilter.duration/60)
+      console.log(hours)
+      let endTime = this.tableFilter.startTime.split(':')
+      let duration = hours >= 1 ? (this.tableFilter.duration - 60 * hours):this.tableFilter.duration
+      endTime[0] = parseInt(endTime[0])+hours
+      endTime[1] = parseInt(endTime[1])+duration
+      if (endTime[1] > 59) {
+        endTime[0]++
+        endTime[1] = endTime[1]-60
+      }
+      if (endTime[1] < 10) {
+        endTime[1] = '0'+endTime[1]
+      }
+      endTime[2]='00'
+      this.tableFilter.endTime = endTime.join('')
+      console.log(endTime.join(''))
+      // this.tableFilter.endTime[0]=endTime[0]
+      // this.tableFilter.endTime[1]=endTime[1]
+      let result = this.crud.data.filter(item => {
+        // filter()对象遍历,true 返回对象参数值,如果多条数据,自动使用数组拼接
+        let tableStartTime = (item.time+':00').split(':').join('')
+
+        let tableEndTime = (item.time2+':00').split(':').join('')
+
+        if (!(filterStartTime >= tableEndTime || this.tableFilter.endTime <= tableStartTime)) {
+          countDoing++
+          return item
+        }
+      })
+      let frees = this.workMassagers.length-1 - countDoing
+      this.$notify({
+        title: frees>0?'还可以接'+frees+'个':'做不了啦',
+        type: 'success',
+        duration: 2500
+      })
+      return result
+    },
+    workCss(data){
+      if (data.info == 'Ing') {
+        return 'Ing'
+      } else {
+        return 'Free'
+      }
     }
   }
 }
@@ -594,6 +690,9 @@ export default {
 <style>
   .el-table__row{
     text-align: center;
+  }
+  .Ing {
+    background-color: #9ec3bd;
   }
   .el-table .addTime-row {
     background: #fbcd77;

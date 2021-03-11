@@ -74,6 +74,9 @@
                             value-format="yyyy-MM-dd HH:mm:ss"
                             type="date" style="width: 370px;" />
           </el-form-item>
+          <el-form-item label="到店时间">
+            <el-time-picker v-model="form.workTime" type="datetime" style="width: 370px;" />
+          </el-form-item>
           <el-form-item label="迟到等级">
             <el-select v-model="form.lateLevel" filterable placeholder="请选择">
               <el-option
@@ -107,6 +110,7 @@
           </template>
         </el-table-column>
         <el-table-column type="date" prop="workDate" label="上班日期" />
+        <el-table-column prop="workTime" label="到店时间" />
         <el-table-column prop="lateLevel" label="迟到等级">
           <template slot-scope="scope">
             {{ dict.label.late_level[scope.row.lateLevel] }}
@@ -119,6 +123,7 @@
               :data="scope.row"
               :permission="permission"
             />
+            <el-button :loading="crud.status.cu === 2" type="success" plain round icon="el-icon-check" size="mini" @click="arrivedShop(scope.row)">已到店</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -140,7 +145,7 @@ import { getMassagers } from '@/api/massage/massager'
 import { getShops } from '@/api/massage/shop'
 import moment from 'moment'
 
-const defaultForm = { id: null, shopId: 1, massagerId: null, workDate: new Date(), lateLevel: '0',massagerIds:[],wage: null }
+const defaultForm = { id: null, shopId: 1, massagerId: null, workDate: new Date(),workTime: null, lateLevel: '0',massagerIds:[],wage: null }
 export default {
   name: 'ShopMassager',
   components: { pagination, crudOperation, rrOperation, udOperation },
@@ -241,7 +246,20 @@ export default {
         // 使用this才可以调用crud的方法
         this.crud.refresh()
       })
-    }
+    },
+    arrivedShop(param) {
+      let nowTime = new Date()
+
+      param.workTime = moment(nowTime).format('HH:mm:ss')
+      this.crud.crudMethod.edit(param).then(data => {
+        this.$notify({
+          title: this.massagerName(param.massagerId)+'到店啦',
+          type: 'success',
+          duration: 2500
+        })
+      })
+      this.crud.crudMethod.refresh()
+    },
   }
 }
 </script>
