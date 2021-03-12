@@ -22,15 +22,15 @@
             :value="item.id"
           />
         </el-select>
-        <label class="el-form-item-label">客人ID</label>
-        <el-select v-model="query.guestId" clearable placeholder="客人名" style="width: 185px;" class="filter-item"@change="crud.toQuery"  @keyup.enter.native="crud.toQuery">
-          <el-option
-            v-for="item in guests"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
+<!--        <label class="el-form-item-label">客人ID</label>-->
+<!--        <el-select v-model="query.guestId" clearable placeholder="客人名" style="width: 185px;" class="filter-item" @change="crud.toQuery"  @keyup.enter.native="crud.toQuery">-->
+<!--          <el-option-->
+<!--            v-for="item in guests"-->
+<!--            :key="item.id"-->
+<!--            :label="item.name"-->
+<!--            :value="item.id"-->
+<!--          />-->
+<!--        </el-select>-->
         <label class="el-form-item-label">开始时间</label>
         <el-date-picker
           @change="initMassager(query)"
@@ -42,6 +42,15 @@
           end-placeholder="结束日期"
           :default-time="['00:00:00', '23:59:59']"
         />
+        <label class="el-form-item-label">是否老客</label>
+        <el-select v-model="query.isAssign" clearable placeholder="请选择" @change="crud.toQuery" style="width: 100px;">
+          <el-option
+            v-for="item in dict.is_assign"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
 <!--        <label class="el-form-item-label">按摩评分</label>-->
 <!--        <el-slider-->
 <!--          v-model="query.mark"-->
@@ -85,25 +94,34 @@
             </el-select>
           </el-form-item>
           <el-form-item label="按摩师" prop="massagerId">
-            <el-select v-model="form.massagerId" filterable placeholder="请选择" @focus="updateWorkMassagers(query)" @change="this.form.remedialId=this.form.massagerId" style="width: 150px;">
+            <el-select v-model="form.massagerId" filterable placeholder="请选择" @focus="updateWorkMassagers(query)"  style="width: 150px;">
               <el-option
                 v-for="item in workMassagers"
                 :key="item.id"
                 :label="item.name"
                 :value="item.id"
-              :class="{Ing:item.status == 'Ing'}">
+              :class="{Ing:item.status == 'ing'}">
                 <span style="float: left">{{ item.name }}</span>
-                <span v-if="{Ing:item.status == 'Ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.status }}</span>
+                <span v-if="{Ing:item.status == 'ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.endTime }}</span>
               </el-option>
             </el-select>
-            <el-select v-model="form.isAssign" filterable placeholder="请选择" style="width: 150px;">
-              <el-option
-                v-for="item in dict.is_assign"
-                :key="item.id"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
+            <el-tooltip :content="'是否指定'" placement="top">
+              <el-switch
+                v-model="form.isAssign"
+                inactive-color="#F4F4F5"
+                active-color="#0D61FF"
+                active-value="1"
+                inactive-value="0">
+              </el-switch>
+            </el-tooltip>
+<!--            <el-select v-model="form.isAssign" filterable placeholder="请选择" style="width: 150px;">-->
+<!--              <el-option-->
+<!--                v-for="item in dict.is_assign"-->
+<!--                :key="item.id"-->
+<!--                :label="item.label"-->
+<!--                :value="item.value"-->
+<!--              />-->
+<!--            </el-select>-->
           </el-form-item>
           <el-divider content-position="left"><i class="el-icon-bell"></i></el-divider>
           <el-form-item label="按摩时长" prop="duration">
@@ -194,7 +212,7 @@
         </div>
       </el-dialog>
       <!--表格渲染-->
-      <el-table show-summary :summary-method="getSummaries" ref="table" v-loading="crud.loading" :data="handlesearch(crud.data)"
+      <el-table show-summary :summary-method="getSummaries" ref="table" v-loading="crud.loading" :data="dataList"
                 :row-class-name="tableRowClassName" size="small" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
         <el-table-column align="center"  type="selection" width="55" />
         <el-table-column align="center" prop="shopId" label="店铺ID">
@@ -204,7 +222,31 @@
         </el-table-column>
         <el-table-column align="center" sortable prop="massagerId" label="按摩师ID">
           <template slot-scope="scope">
-            {{ massagerName(scope.row.massagerId) }}
+            <el-select size="mini" v-model="scope.row.massagerId" style="width: 90px;" filterable placeholder="请选择" @change="crud.crudMethod.edit(scope.row)">
+              <el-option
+                v-for="item in workMassagers"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+                :class="{Ing:item.status == 'ing'}">
+                <span style="float: left">{{ item.name }}</span>
+                <span v-if="{Ing:item.status == 'ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.endTime }}</span>
+              </el-option>
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" prop="isAssign" label="指定" width="50">
+          <template slot-scope="scope">
+            <el-tooltip :content="'是否指定'" placement="top">
+              <el-switch
+                v-model="scope.row.isAssign"
+                @change="crud.crudMethod.edit(scope.row)"
+                inactive-color="#F4F4F5"
+                active-color="#0D61FF"
+                active-value="1"
+                inactive-value="0">
+              </el-switch>
+            </el-tooltip>
           </template>
         </el-table-column>
 <!--        <el-table-column prop="guestId" label="客人ID">-->
@@ -217,7 +259,7 @@
 <!--            {{ dict.label.is_assign[scope.row.isAssign] }}-->
 <!--          </template>-->
 <!--        </el-table-column>-->
-        <el-table-column align="center" visEdit="true" prop="duration" label="按摩时长" />
+        <el-table-column align="center"  prop="duration" label="按摩时长" width="70"/>
         <el-table-column align="center" prop="extraTime" label="加时时长" >
           <template slot-scope="scope">
             <el-input-number v-model="scope.row.extraTime" style="width: 85px;" size="mini" controls-position="right" :step="5" :min="0" :max="150" :rows="3" @change="andTime(scope.row)" />
@@ -257,7 +299,7 @@
             <el-input-number v-model="scope.row.insurance"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
           </template>
         </el-table-column>
-        <el-table-column align="center" sortable prop="startTime" label="预约开始时间"
+        <el-table-column align="center" sortable prop="startTime" label="预约开始"
         width="130">
           <template slot-scope="scope">
             <el-time-select
@@ -275,11 +317,9 @@
             />
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="time2" label="预计结束时间" />
-        <el-tooltip :content="'是否是保险'" placement="top">
-          <el-table-column prop="info" label="备注" width="60"/>
+        <el-table-column align="center" prop="time2" width="70" label="预计结束" />
+        <el-table-column prop="info" label="备注" :show-overflow-tooltip="true" width="50"/>
 
-        </el-tooltip>
         <el-table-column align="center" prop="insuranceStatus" label="保险" width="55">
           <template slot-scope="scope">
             <el-tooltip :content="'是否是保险'" placement="top">
@@ -330,7 +370,7 @@ export default {
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['is_assign', 'mark'],
   cruds() {
-    return CRUD({ title: '记录', url: 'api/massageRecord', idField: 'id', sort: ['startTime,desc','id,desc'], crudMethod: { ...crudMassageRecord }})
+    return CRUD({ title: '记录', url: 'api/massageRecord', idField: 'id', sort: ['id,desc'], crudMethod: { ...crudMassageRecord }})
   },
   data() {
     return {
@@ -401,6 +441,11 @@ export default {
     this.$set(this.query,'startTime',this.initDate)
     this.$set(this.query,'shopId',1)
     this.$set(this.form,'time',new Date().format('HH:mm'))
+  },
+  computed: {
+    dataList:function() {
+        return this.handlesearch(this.crud.data)
+    }
   },
   methods: {
     // 钩子：在获取表格数据之前执行，false 则代表不获取数据
@@ -498,6 +543,8 @@ export default {
       var d = new Date()
       d.setTime(Date.parse(data.startTime) + 60000 * (data.duration+data.extraTime))
       data.endTime = moment(d).format('YYYY-MM-DD HH:mm:ss')
+      data.time2 = moment(d).format('HH:mm')
+      console.log(data)
       this.crud.crudMethod.edit(data)
     },
     countTableTime(data) {
@@ -544,6 +591,8 @@ export default {
       }else if (row.extraTime >= 15) {
         return 'addTime-row'
       }else if(Date.parse(rowEndTime)>closedTime){
+        row.isAssign="2"
+        this.crud.crudMethod.edit(row)
         return 'addTime-row'
       }
       return '';
@@ -608,7 +657,7 @@ export default {
           sums[index] = '按摩师';
           return;
         }
-        if (index === 5) {
+        if (index === 6) {
           sums[index] = '保险人';
           return;
         }
@@ -622,10 +671,12 @@ export default {
               return prev;
             }
           }, 0);
-          if (index === 3 || index === 4) {
+          if (index === 3) {
+            sums[index] += ' 个指定'
+          } else if (index === 4 || index === 5) {
             sums[index] += ' mins'
-          } else {
-            sums[index] += ' 元';
+          }else {
+            sums[index] = '$ '+sums[index];
           }
         } else {
           sums[index] = '---';
@@ -634,9 +685,9 @@ export default {
 
       return sums;
     },
-    handlesearch: function() { //第30行调用了该方法
+    handlesearch: function(data) { //第30行调用了该方法
       if (this.tableFilter.startTime == null) {
-        return this.crud.data
+        return data
       }
       let countDoing = 0;
       let filterStartTime = this.tableFilter.startTime.split(':').join('')
@@ -658,7 +709,7 @@ export default {
       console.log(endTime.join(''))
       // this.tableFilter.endTime[0]=endTime[0]
       // this.tableFilter.endTime[1]=endTime[1]
-      let result = this.crud.data.filter(item => {
+      let result = data.filter(item => {
         // filter()对象遍历,true 返回对象参数值,如果多条数据,自动使用数组拼接
         let tableStartTime = (item.time+':00').split(':').join('')
 
@@ -677,13 +728,6 @@ export default {
       })
       return result
     },
-    workCss(data){
-      if (data.info == 'Ing') {
-        return 'Ing'
-      } else {
-        return 'Free'
-      }
-    }
   }
 }
 </script>

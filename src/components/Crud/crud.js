@@ -32,7 +32,7 @@ function CRUD(options) {
     // 重置表单
     defaultForm: () => {},
     // 排序规则，默认 id 降序， 支持多字段排序 ['id,desc', 'createTime,asc']
-    sort: ['startTime,desc'],
+    sort: ['id,desc'],
     // 等待时间
     time: 50,
     // CRUD Method
@@ -125,9 +125,9 @@ function CRUD(options) {
     },
     // 刷新
     refresh() {
-      if (!callVmHook(crud, CRUD.HOOK.beforeRefresh)) {
-        return
-      }
+      // if (!callVmHook(crud, CRUD.HOOK.beforeRefresh)) {
+      //   return
+      // }
       return new Promise((resolve, reject) => {
         crud.loading = true
         // 请求数据

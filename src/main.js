@@ -1,5 +1,5 @@
 import Vue from 'vue'
-
+import vGanttChart from 'v-gantt-chart';
 import Cookies from 'js-cookie'
 
 import 'normalize.css/normalize.css'
@@ -31,9 +31,11 @@ import './assets/icons' // icon
 import './router/index' // permission control
 import 'echarts-gl'
 
+
 Vue.use(checkPer)
 Vue.use(VueHighlightJS)
 Vue.use(mavonEditor)
+Vue.use(vGanttChart);
 Vue.use(permission)
 Vue.use(dict)
 Vue.use(Element, {

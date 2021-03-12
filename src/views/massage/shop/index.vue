@@ -24,28 +24,17 @@
           <el-form-item label="店铺网址">
             <el-input v-model="form.website" style="width: 370px;" />
           </el-form-item>
-          <el-form-item v-if="false" label="店长ID" prop="managerId">
-            <el-input v-model="form.massagerId" style="width: 370px;" />
-          </el-form-item>
-          <el-form-item :show-overflow-tooltip="true" label="店长名字" prop="name">
-            <el-autocomplete
-              v-model="form.managerName"
-              popper-class="my-autocomplete"
-              style="width: 370px;"
-              :fetch-suggestions="querySearchAsync"
-              placeholder="请输入店长名字"
-              @select="updateMassagerId($event)"
-            >
-              <li
-                slot="suffix"
-                class="el-icon-edit el-input__icon"
-              />
-              <template slot-scope="{ item }">
-                <div class="name">{{ item.value }}</div>
-                <span class="info">{{ item.info }}</span>
-              </template>
-
-            </el-autocomplete>
+          <el-form-item label="店长" prop="managerId">
+            <el-select v-model="form.managerId" filterable placeholder="请选择" style="width: 150px;">
+              <el-option
+                v-for="item in massagers"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+                <span style="float: left">{{ item.name }}</span>
+                <span style="float: right; color: #a6404d; font-size: 13px">{{ item.info }}</span>
+              </el-option>
+            </el-select>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -59,12 +48,25 @@
         <el-table-column prop="name" label="店铺名称" />
         <el-table-column prop="phone" label="店铺手机号" />
         <el-table-column prop="website" label="店铺网址" />
-        <el-table-column prop="managerId" label="店长ID">
+        <el-table-column align="center" sortable prop="massagerId" label="店长">
+          <template slot-scope="scope">
+            <el-select size="mini" v-model="scope.row.managerId" style="width: 90px;" filterable placeholder="请选择" @change="crud.crudMethod.edit(scope.row)">
+              <el-option
+                v-for="item in massagers"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+                :class="{Ing:item.status == 'ing'}">
+                <span style="float: left">{{ item.name }}</span>
+                <span v-if="{Ing:item.status == 'ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.endTime }}</span>
+              </el-option>
+            </el-select>
+          </template>
+        </el-table-column>
           <!--          <template slot-scope="scope">-->
           <!--            {{ dict.label.sex[scope.row.sex] }}-->
           <!--          </template>-->
         </el-table-column>
-        <el-table-column prop="managerName" label="店长名称" />
         <el-table-column v-if="checkPer(['admin','shop:edit','shop:del'])" label="操作" width="150px" align="center">
           <template slot-scope="scope">
             <udOperation
@@ -116,7 +118,10 @@ export default {
         { key: 'name', display_name: '店铺名称' },
         { key: 'managerId', display_name: '店长ID' }
       ],
-      massagers: [],
+      massagers: [{
+      id:16,
+      name:"默认"
+    }],
       massagerId: ''
     }
   },
@@ -128,46 +133,24 @@ export default {
     [CRUD.HOOK.beforeRefresh]() {
       return true
     },
-    initMassager: function() {
+    initMassager: function(queryParam) {
       getMassagers().then(data => {
         this.massagers = data.content
       })
     },
-    querySearchAsync(queryString, callback) {
-      var list = [{}]
-      // 调用的后台接口
-      const queryParams = {
-        'name': queryString
+    massagerName(id) {
+      const result = this.massagers.find(item => item.id == id)
+      if (typeof result === 'undefined') {
+        return id + '号按摩师不存在'
       }
-      // 从后台获取到对象数组
-      getMassagers(queryParams).then(data => {
-        list = data.content
-        for (const i of list) {
-          i.value = i.name // 将想要展示的数据作为value
-        }
-        // 在这里为这个数组中每一个对象加一个value字段, 因为autocomplete只识别value字段并在下拉列中显示
-        list = list.filter(this.createFilter(queryString))
-        callback(list)
-      }).catch((error) => {
-        console.log(error)
-      })
+      return result.name
     },
-    handleSelect(item) {
-      // item.value = item.value.split(":")[0]
-      console.log(item)
-      // do something
-    },
-    createFilter(queryString) {
-      return (restaurant) => {
-        return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) > -1)
-        // 后台已做筛选,不需再过滤
-        // return (restaurant.value)
+    shopName(id) {
+      const result = this.shops.find(item => item.id == id)
+      if (typeof result === 'undefined') {
+        return id + '号店铺不存在'
       }
-    },
-    updateMassagerId(event) {
-      console.log(event)
-      this.form.managerId = event.id // 赋值给后端需要的字段
-      this.form.managerName = event.name // 赋值给后端需要的字段
+      return result.name
     }
   }
 }
