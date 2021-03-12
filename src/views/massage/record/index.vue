@@ -564,8 +564,10 @@ export default {
     },
     // 表格颜色方法
     tableRowClassName({row, rowIndex}) {
+      let rowEndTime = row.endTime;
       // 周六日 五点整，周四是九点整，其余时间五点半
       let closedTime = new Date()
+      closedTime.setTime(Date.parse(rowEndTime))
       var week = "星期" + "日一二三四五六".charAt(closedTime.getDay());
 
       if (closedTime.getDay() === 0 || closedTime.getDay() === 6) {
@@ -582,7 +584,6 @@ export default {
         closedTime.setSeconds(0)
       }
       // 周六日 五点整，周四是九点整，其余时间五点半
-      let rowEndTime = row.endTime;
 
       if (row.isAssign === "1") {
         return 'frequenter-row';
