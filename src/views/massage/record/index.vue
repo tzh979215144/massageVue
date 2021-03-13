@@ -182,10 +182,13 @@
           <el-divider content-position="left"><i class="el-icon-bank-card"></i></el-divider>
           <el-form-item label="现金刷卡">
             <el-tooltip :content="'现金'" placement="top">
-              <el-input-number v-model="form.cash"  :precision="2" :min="0" style="width: 150px;" @change="updateFormIncome(form)"/>
+              <el-input-number v-model="form.cash"  :precision="2" :min="0" style="width: 120px;" @change="updateFormIncome(form)"/>
             </el-tooltip>
             <el-tooltip :content="'刷卡'" placement="top">
-              <el-input-number v-model="form.card" :precision="2" :min="0" style="width: 150px;" @change="updateFormIncome(form)"/>
+              <el-input-number v-model="form.card" :precision="2" :min="0" style="width: 120px;" @change="updateFormIncome(form)"/>
+            </el-tooltip>
+            <el-tooltip :content="'gv/off'" placement="top">
+              <el-input-number v-model="form.gvOff" :precision="2" :min="0" style="width: 100px;" controls-position="right" @change="updateFormIncome(form)"/>
             </el-tooltip>
           </el-form-item>
           <el-form-item label="保险">
@@ -326,6 +329,11 @@
             <el-input-number v-model="scope.row.insurance"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
           </template>
         </el-table-column>
+        <el-table-column align="center" prop="gvOff" label="gv/off" >
+          <template slot-scope="scope">
+            <el-input-number v-model="scope.row.gvOff"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
+          </template>
+        </el-table-column>
         <el-table-column align="center" sortable prop="startTime" label="预约开始"
         width="130">
           <template slot-scope="scope">
@@ -388,7 +396,7 @@ import myDatepicker from 'vue-datepicker/vue-datepicker-es6.vue'
 import moment from 'moment'
 import {getWorkMassagers} from '@/api/massage/shopMassager'
 
-const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,status:null}
+const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null}
 export default {
   name: 'MassageRecord',
   components: { pagination, crudOperation, rrOperation, udOperation, myDatepicker },
@@ -629,24 +637,7 @@ export default {
     },
     // 更新表格总收入
     updateTableIncome(data){
-      if (data.cash == undefined) {
-        data.cash = 0
-      }
-      if (data.card == undefined) {
-        data.card = 0
-      }
-      if (data.insurance == undefined) {
-        data.insurance = 0
-      }
-      console.log(data.insurance)
-
-      if (data.insurance !== 0) {
-        data.insuranceStatus = 'Y'
-      }else {
-        data.insuranceStatus = 'N'
-      }
-      //关系：总金额=其余所有相加
-      data.income = data.cash+data.insurance+data.card
+      data = this.updateFormIncome(data)
       // 更新数据
       this.crud.crudMethod.edit(data)
     },
@@ -661,6 +652,9 @@ export default {
       if (data.insurance == undefined) {
         data.insurance = 0
       }
+      if (data.gvOff == undefined) {
+        data.gvOff = 0
+      }
       console.log(data.insurance)
 
       if (data.insurance !== 0) {
@@ -669,7 +663,8 @@ export default {
         data.insuranceStatus = 'N'
       }
       //关系：总金额=其余所有相加
-      data.income = data.cash+data.insurance+data.card
+      data.income = data.cash+data.insurance+data.card+data.gvOff
+      return data
     },
     getSummaries(param) {
       const { columns, data } = param;
