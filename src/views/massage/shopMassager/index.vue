@@ -202,7 +202,8 @@ export default {
     initMassager: function(queryParam) {
       console.log(queryParam.workDate)
       getMassagers().then(data => {
-        this.massagers = data.content
+        console.log(data)
+        this.massagers = data
       })
       getShops().then(data => {
         this.shops = data.content

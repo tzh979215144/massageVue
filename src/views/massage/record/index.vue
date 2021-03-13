@@ -60,8 +60,32 @@
 <!--        />-->
         <rrOperation :crud="crud" />
       </div>
+
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
-      <crudOperation :permission="permission" />
+      <crudOperation :permission="permission" >
+        <div slot = 'right' class="timeLineTitle">
+          <div class="timeLineItem">
+            <div class="addTimeTip timeLineStatus" />
+            <div>加班加时</div>
+          </div>
+          <div class="timeLineItem">
+            <div class="frequenterTip timeLineStatus" />
+            <div>老客</div>
+          </div>
+          <div class="timeLineItem">
+            <div class="insuranceTip timeLineStatus" />
+            <div>保险</div>
+          </div>
+          <div class="timeLineItem">
+            <div class="toleranceStart timeLineStatus" />
+            <div>建议推迟开始</div>
+          </div>
+          <div class="timeLineItem">
+            <div class="toleranceEnd timeLineStatus" />
+            <div>建议推迟预约时间</div>
+          </div>
+        </div>
+      </crudOperation>
       <label class="el-form-item-label">预约时间</label>
       <el-time-select
         v-model="tableFilter.startTime"
@@ -77,6 +101,11 @@
       <label class="el-form-item-label">时长</label>
       <el-input-number
         v-model="tableFilter.duration"
+        :step="5" :min="0" :max="150" :rows="3" style="width: 150px;"
+      />
+      <label class="el-form-item-label">Tolerance</label>
+      <el-input-number
+        v-model="tableFilter.tolerance"
         :step="5" :min="0" :max="150" :rows="3" style="width: 150px;"
       />
       <el-button :loading="crud.status.cu === 2" type="success" plain round icon="el-icon-check" size="mini" @click="handlesearch(crud.data)">查询时间安排</el-button>
@@ -237,16 +266,14 @@
         </el-table-column>
         <el-table-column align="center" prop="isAssign" label="指定" width="50">
           <template slot-scope="scope">
-            <el-tooltip :content="'是否指定'" placement="top">
-              <el-switch
-                v-model="scope.row.isAssign"
-                @change="crud.crudMethod.edit(scope.row)"
-                inactive-color="#F4F4F5"
-                active-color="#0D61FF"
-                active-value="1"
-                inactive-value="0">
-              </el-switch>
-            </el-tooltip>
+            <el-switch
+              v-model="scope.row.isAssign"
+              @change="crud.crudMethod.edit(scope.row)"
+              inactive-color="#F4F4F5"
+              active-color="#0D61FF"
+              active-value="1"
+              inactive-value="0">
+            </el-switch>
           </template>
         </el-table-column>
 <!--        <el-table-column prop="guestId" label="客人ID">-->
@@ -317,21 +344,19 @@
             />
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="time2" width="70" label="预计结束" />
+        <el-table-column align="center" sortable prop="time2" width="100" label="预计结束" />
         <el-table-column prop="info" label="备注" :show-overflow-tooltip="true" width="50"/>
 
         <el-table-column align="center" prop="insuranceStatus" label="保险" width="55">
           <template slot-scope="scope">
-            <el-tooltip :content="'是否是保险'" placement="top">
-              <el-switch
-                v-model="scope.row.insuranceStatus"
-                @change="crud.crudMethod.edit(scope.row)"
-                inactive-color="#F4F4F5"
-                active-color="#67C23A"
-                active-value="Y"
-                inactive-value="N">
-              </el-switch>
-            </el-tooltip>
+            <el-switch
+              v-model="scope.row.insuranceStatus"
+              @change="crud.crudMethod.edit(scope.row)"
+              inactive-color="#F4F4F5"
+              active-color="#67C23A"
+              active-value="Y"
+              inactive-value="N">
+            </el-switch>
           </template>
         </el-table-column>
         <el-table-column v-if="checkPer(['admin','massageRecord:edit','massageRecord:del'])" label="操作" width="150px" align="center">
@@ -363,14 +388,14 @@ import myDatepicker from 'vue-datepicker/vue-datepicker-es6.vue'
 import moment from 'moment'
 import {getWorkMassagers} from '@/api/massage/shopMassager'
 
-const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null}
+const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,status:null}
 export default {
   name: 'MassageRecord',
   components: { pagination, crudOperation, rrOperation, udOperation, myDatepicker },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['is_assign', 'mark'],
   cruds() {
-    return CRUD({ title: '记录', url: 'api/massageRecord', idField: 'id', sort: ['id,desc'], crudMethod: { ...crudMassageRecord }})
+    return CRUD({ title: '记录', url: 'api/massageRecord', idField: 'id', sort: ['startTime,desc','id,desc'], crudMethod: { ...crudMassageRecord }})
   },
   data() {
     return {
@@ -423,8 +448,9 @@ export default {
       },
       tableFilter:{
         startTime:null,
-        duration:null,
-        endTime:null
+        duration:20,
+        endTime:null,
+        tolerance:10
       },
       initDate:[
         moment(new Date().setHours(0,0,0)).format('YYYY-MM-DD HH:mm:ss'),
@@ -489,8 +515,8 @@ export default {
       })
       // 所有按摩师
       getMassagers().then(data => {
-        this.massagers = data.content
-        this.remedialMassagers = data.content.filter(function (value, index, array) {
+        this.massagers = data
+        this.remedialMassagers = data.filter(function (value, index, array) {
           return value.isDiplomate == "1";
         })
       })
@@ -574,29 +600,32 @@ export default {
         closedTime.setHours(17)
         closedTime.setMinutes(5)
         closedTime.setSeconds(0)
-      }else if (closedTime.getDay() === 4) {
+      } else if (closedTime.getDay() === 4) {
         closedTime.setHours(21)
         closedTime.setMinutes(5)
         closedTime.setSeconds(0)
-      }else {
+      } else {
         closedTime.setHours(17)
         closedTime.setMinutes(35)
         closedTime.setSeconds(0)
       }
       // 周六日 五点整，周四是九点整，其余时间五点半
-
-      if (row.isAssign === "1") {
+      // 可容忍的冲突
+      if (row.status == '1') {
+        return 'tolerance-row';
+      }else if (row.status == '2') {
+        return 'tolerance-row2';
+      } else if (row.isAssign === "1") {
         return 'frequenter-row';
       } else if (row.insuranceStatus === "Y") {
         return 'insurance-row';
-      }else if (row.extraTime >= 15) {
+      } else if (row.extraTime >= 15) {
         return 'addTime-row'
-      }else if(Date.parse(rowEndTime)>closedTime){
-        row.isAssign="2"
+      } else if (Date.parse(rowEndTime) > closedTime) {
+        row.isAssign = "2"
         this.crud.crudMethod.edit(row)
         return 'addTime-row'
       }
-      return '';
     },
     // 更新表格总收入
     updateTableIncome(data){
@@ -664,16 +693,25 @@ export default {
         }
         const values = data.map(item => Number(item[column.property]));
         if (!values.every(value => isNaN(value))) {
-          sums[index] = values.reduce((prev, curr) => {
-            const value = Number(curr);
-            if (!isNaN(value)) {
-              return prev + curr;
-            } else {
-              return prev;
-            }
-          }, 0);
           if (index === 3) {
-            sums[index] += ' 个指定'
+            sums[index] = 0;
+            for (let i = 0; i < values.length; i++) {
+              if (values[i] == '1') {
+                sums[index]++
+              }
+            }
+          }else {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+          }
+          if (index === 3) {
+            sums[index] += ' 个老客'
           } else if (index === 4 || index === 5) {
             sums[index] += ' mins'
           }else {
@@ -705,25 +743,36 @@ export default {
       if (endTime[1] < 10) {
         endTime[1] = '0'+endTime[1]
       }
-      endTime[2]='00'
+      // endTime[2]='00'
       this.tableFilter.endTime = endTime.join('')
-      console.log(endTime.join(''))
       // this.tableFilter.endTime[0]=endTime[0]
       // this.tableFilter.endTime[1]=endTime[1]
+      let toleranceStatus = 'N'
       let result = data.filter(item => {
         // filter()对象遍历,true 返回对象参数值,如果多条数据,自动使用数组拼接
-        let tableStartTime = (item.time+':00').split(':').join('')
+        let tableStartTime = (item.time+'').split(':').join('')
+        console.log(tableStartTime)
 
-        let tableEndTime = (item.time2+':00').split(':').join('')
-
-        if (!(filterStartTime >= tableEndTime || this.tableFilter.endTime <= tableStartTime)) {
+        let tableEndTime = (item.time2+'').split(':').join('')
+        if (filterStartTime <= tableEndTime && this.tableFilter.endTime >=tableStartTime) {
+          console.log(this.tableFilter.endTime+'---'+tableStartTime)
           countDoing++
+          if (tableEndTime - filterStartTime <= this.tableFilter.tolerance) {
+              item.status = '1'
+            toleranceStatus = 'Y'
+          }else if (this.tableFilter.endTime - tableStartTime <= this.tableFilter.tolerance) {
+            item.status = '2'
+            toleranceStatus = 'Y'
+          } else {
+            item.status = '0'
+          }
           return item
         }
       })
+      console.log(toleranceStatus)
       let frees = this.workMassagers.length-1 - countDoing
       this.$notify({
-        title: frees>0?'还可以接'+frees+'个':'做不了啦',
+        title: (frees>0?'还可以接'+frees+'个':'做不了啦')+''+(toleranceStatus=='Y'?'红色的可以考虑哦':''),
         type: 'success',
         duration: 2500
       })
@@ -733,12 +782,6 @@ export default {
 }
 </script>
 <style>
-  .el-table__row{
-    text-align: center;
-  }
-  .Ing {
-    background-color: #9ec3bd;
-  }
   .el-table .addTime-row {
     background: #fbcd77;
   }
@@ -750,18 +793,48 @@ export default {
   .el-table .insurance-row {
     background: #d0f1be;
   }
+ .el-table .tolerance-row {
+   background: #f196ba;
+ }
+  .el-table .tolerance-row2 {
+    background: #f171c1;
+  }
 </style>
-<style scoped>
+<style scoped lang="scss">
+  .timeLineTitle {
+    float: right;
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
 
-  /*.el-slider__runway {*/
-  /*  width: 27%;*/
-  /*  height: 6px;*/
-  /*  margin: 16px 0;*/
-  /*  background-color: #dfe4ed;*/
-  /*  border-radius: 3px;*/
-  /*  position: relative;*/
-  /*  cursor: pointer;*/
-  /*  vertical-align: middle;*/
-  /*}*/
+    .timeLineItem {
+      display: flex;
+      padding: 0px;
+      font-size: 15px;
+      justify-content: center; /* 水平居中 */
+      align-items: center; /* 垂直居中 */
+    }
+    .timeLineStatus {
+      width: 28px;
+      height: 10px;
+      margin: 10px;
+      border-radius: 2px;
+    }
+    .addTimeTip {
+      background-color: #fbcd77;
+    }
+    .frequenterTip {
+      background-color: #b3d2f1;
+    }
+    .insuranceTip {
+      background-color: #d0f1be;
+    }
+    .toleranceEnd {
+      background-color: #f196ba;
+    }
+    .toleranceStart {
+      background-color: #f171c1;
+    }
+  }
 </style>
 

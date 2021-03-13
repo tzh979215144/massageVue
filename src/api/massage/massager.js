@@ -2,12 +2,18 @@ import request from '@/utils/request'
 
 export function getMassagers(data) {
   return request({
+    url: 'api/massager/all',
+    method: 'get',
+    data
+  })
+}
+export function get(data) {
+  return request({
     url: 'api/massager',
     method: 'get',
     data
   })
 }
-
 export function add(data) {
   return request({
     url: 'api/massager',
@@ -18,7 +24,7 @@ export function add(data) {
 
 export function del(ids) {
   return request({
-    url: 'api/massager/',
+    url: 'api/massager',
     method: 'delete',
     data: ids
   })

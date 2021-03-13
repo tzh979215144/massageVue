@@ -374,8 +374,8 @@ export default {
       })
       // 所有按摩师
       getMassagers().then(data => {
-        this.massagers = data.content
-        this.remedialMassagers = data.content.filter(function (value, index, array) {
+        this.massagers = data
+        this.remedialMassagers = data.filter(function (value, index, array) {
           return value.isDiplomate == "1";
         })
       })
