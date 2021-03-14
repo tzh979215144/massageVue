@@ -110,7 +110,7 @@
           </template>
         </el-table-column>
         <el-table-column type="date" prop="workDate" label="上班日期" />
-        <el-table-column prop="workTime" label="到店时间" />
+        <el-table-column sortable prop="workTime" label="到店时间" />
         <el-table-column prop="lateLevel" label="迟到等级">
           <template slot-scope="scope">
             {{ dict.label.late_level[scope.row.lateLevel] }}
