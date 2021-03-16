@@ -172,11 +172,11 @@
             <el-input-number
               v-model="form.duration"
               :step="5" :min="0" :max="150" :rows="3" style="width: 130px;"
-              @change="countEndTime(form)"
+              @change="handleTime(form)"
             />
           </el-form-item>
-          <el-form-item label="加时" prop="extraTime">
-              <el-input-number v-model="form.extraTime"  placeholder="加时" :step="5" :min="0" :max="150" :rows="3" style="width: 130px;" @change="countEndTime(form)" />
+          <el-form-item :class="{Ing:form.extraTime >= 15}" label="加时" prop="extraTime">
+              <el-input-number v-model="form.extraTime"  placeholder="加时" :step="5" :min="0" :max="150" :rows="3" style="width: 130px;" @change="handleTime(form)" />
           </el-form-item>
           <el-form-item label="开始" prop="time">
               <el-time-select
@@ -189,7 +189,7 @@
                 end: '20:30'
               }"
                 style="width: 130px;"
-                @change="countStartTime($event)"
+                @change="handleTime(form)"
               />
           </el-form-item>
           <el-form-item label="结束" prop="time2">
@@ -203,7 +203,6 @@
                 end: '20:30'
               }"
                 style="width: 130px;"
-                @change="changeStartTime(scope.row)"
               />
             </el-form-item>
 <!--              <el-time-picker v-model="form.time2" type="datetime" style="width: 120px;" />-->
@@ -266,7 +265,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="备注">
-            <el-input v-model="form.info" :rows="3" type="textarea" style="width: 370px;" />
+            <el-input v-model="form.info" :rows="2" type="textarea" style="width: 370px;" />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -283,7 +282,7 @@
 <!--            {{ shopName(scope.row.shopId) }}-->
 <!--          </template>-->
 <!--        </el-table-column>-->
-        <el-table-column align="center" sortable prop="massagerId" label="按摩师ID">
+        <el-table-column align="center" sortable prop="massagerId" label="按摩师">
           <template slot-scope="scope">
             <el-select size="mini" v-model="scope.row.massagerId" style="width: 90px;" filterable placeholder="请选择" @change="crud.crudMethod.edit(scope.row)">
               <el-option
@@ -321,9 +320,9 @@
 <!--          </template>-->
 <!--        </el-table-column>-->
         <el-table-column align="center"  prop="duration" label="按摩时长" width="70"/>
-        <el-table-column align="center" prop="extraTime" label="加时时长" >
-          <template slot-scope="scope">
-            <el-input-number v-model="scope.row.extraTime" style="width: 85px;" size="mini" controls-position="right" :step="5" :min="0" :max="150" :rows="3" @change="andTime(scope.row)" />
+        <el-table-column  align="center" prop="extraTime" label="加时" >
+          <template slot-scope="scope" >
+            <el-input-number  :class="{extraTime:scope.row.extraTime >= 15}"  v-model="scope.row.extraTime" style="width: 85px" size="mini" controls-position="right" :step="5" :min="0" :max="150" :rows="3" @change="handleAndUpdateTime(scope.row)" />
           </template>
         </el-table-column>
         <el-table-column align="center" prop="remedialId" label="保险刷谁的">
@@ -345,17 +344,17 @@
 <!--        </el-table-column>-->
         <el-table-column align="center" prop="income" label="总金额" >
         </el-table-column>
-        <el-table-column align="center" prop="cash" label="现金金额" >
+        <el-table-column align="center" prop="cash" label="CASH" >
           <template slot-scope="scope">
             <el-input-number v-model="scope.row.cash"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="card" label="卡金额" >
+        <el-table-column align="center" prop="card" label="EFPOS" >
           <template slot-scope="scope">
             <el-input-number v-model="scope.row.card"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="insurance" label="保险金额" >
+        <el-table-column align="center" prop="insurance" label="INS" >
           <template slot-scope="scope">
             <el-input-number v-model="scope.row.insurance"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
           </template>
@@ -379,13 +378,13 @@
                 end: '20:30'
               }"
               style="width: 100%"
-              @change="changeStartTime(scope.row)"
+              @change="handleAndUpdateTime(scope.row)"
             />
           </template>
         </el-table-column>
         <el-table-column align="center" sortable prop="time2" width="100" label="预计结束" />
         <el-table-column prop="info" label="备注" :show-overflow-tooltip="true" width="50"/>
-        <el-table-column align="center" prop="massageType" label="Item"
+        <el-table-column align="center" prop="massageType" label="Part"
                          width="100">
           <template slot-scope="scope">
             <el-select v-model="scope.row.massageType" @change="crud.crudMethod.edit(scope.row)" filterable placeholder="请选择" style="width: 90px;">
@@ -441,8 +440,8 @@ import { getShops } from '@/api/massage/shop'
 import myDatepicker from 'vue-datepicker/vue-datepicker-es6.vue'
 import moment from 'moment'
 import {getWorkMassagers} from '@/api/massage/shopMassager'
-
-const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null}
+// status 给容忍状态用，
+const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null,timeStatus:'0'}
 export default {
   name: 'MassageRecord',
   components: { pagination, crudOperation, rrOperation, udOperation, myDatepicker },
@@ -523,7 +522,6 @@ export default {
     }
   },
   mounted() {
-    this.countEndTime(this.form)
     this.initMassager(this.query)
 
   },
@@ -613,44 +611,47 @@ export default {
       }
       return result.name
     },
-    countStartTime(event) {
-      var nowD = new Date()
-      nowD.setHours((event+'').substr(0,2))
-      nowD.setMinutes((event+'').substr(3,2))
+    handleTime(data){
+      // 加时收钱超过15刀-加时=1，加班的话，为2
+      if (data.extraTime >= 15 || (data.extraTime >= 10 && data.duration <= 20)) {
+        data.timeStatus = '1'
+      }else if (data.timeStatus == '1') {
+        data.timeStatus = '0'
+      }
+      // 编辑预约开始结束时间的日期-默认当天，如果有queryStartTime就用query的
+      let nowTime = new Date()
+      let initStartTIme = new Date
+      let queryDay = new Date()
+      if (this.query.startTime[0] != 'undefined') {
+        // Date.parse使用YYYY/MM/DD HH:mm:ss这个格式，不然在Safari会报错
+        queryDay.setTime(Date.parse(this.query.startTime[0].replace(/-/g,"/")))
+      }
+      initStartTIme = queryDay
+      initStartTIme.setHours(nowTime.getHours())
+      initStartTIme.setMinutes(nowTime.getMinutes())
+      initStartTIme.setSeconds(nowTime.getSeconds())
+
+      if (data.time == 'Invalid date'||data.time == null) {
+        data.time = moment(initStartTIme).format('HH:mm')
+      }
+      let inputTime = data.time
+      queryDay.setHours((inputTime+'').substr(0,2))
+      queryDay.setMinutes((inputTime+'').substr(3,2))
       // todo 是否有时区问题
-      this.form.startTime = moment(nowD).format('YYYY-MM-DD HH:mm:ss')
-      var d = new Date()
-      d.setTime(Date.parse(this.form.startTime) + 60000 * (this.form.duration+this.form.extraTime))
-      this.form.endTime = moment(d).format('YYYY-MM-DD HH:mm:ss')
-      this.form.time2 = moment(d).format('HH:mm')
-    },
-    countEndTime(data) {
-      var d = new Date()
-      d.setTime(Date.parse(data.startTime) + 60000 * (data.duration+data.extraTime))
-      data.endTime = d
-      data.time2 = moment(d).format('HH:mm')
-    },
-    andTime(data) {
-      var d = new Date()
-      d.setTime(Date.parse(data.startTime) + 60000 * (data.duration+data.extraTime))
-      data.endTime = moment(d).format('YYYY-MM-DD HH:mm:ss')
-      data.time2 = moment(d).format('HH:mm')
-      this.crud.crudMethod.edit(data)
-    },
-    countTableTime(data) {
-      var nowD = new Date()
-      nowD.setHours((data.time+'').substr(0,2))
-      nowD.setMinutes((data.time+'').substr(3,2))
-      // 是否有时区问题
-      data.startTime = moment(nowD).format('YYYY-MM-DD HH:mm:ss')
-      var d = new Date()
-      d.setTime(Date.parse(data.startTime) + 60000 * (data.duration+data.extraTime))
-      data.endTime = moment(d).format('YYYY-MM-DD HH:mm:ss')
-      data.time2 = moment(d).format('HH:mm')
+      data.startTime = moment(queryDay).format('YYYY-MM-DD HH:mm:ss')
+      data.time = moment(queryDay).format('HH:mm')
+      let endTime = new Date()
+      endTime.setTime(queryDay.getTime() + 60000 * (data.duration+data.extraTime))
+      data.endTime = moment(endTime).format('YYYY-MM-DD HH:mm:ss')
+      data.time2 = moment(endTime).format('HH:mm')
       return data
     },
-    changeStartTime(data) {
-      data = this.countTableTime(data)
+    handleAndUpdateTime(data) {
+      console.log(data)
+
+      data = this.handleTime(data)
+      console.log(data)
+
       this.crud.crudMethod.edit(data)
     },
     // 表格颜色方法
@@ -658,7 +659,7 @@ export default {
       let rowEndTime = row.endTime;
       // 周六日 五点整，周四是九点整，其余时间五点半
       let closedTime = new Date()
-      closedTime.setTime(Date.parse(rowEndTime))
+      closedTime.setTime(Date.parse(rowEndTime.replace(/-/g,"/")))
       var week = "星期" + "日一二三四五六".charAt(closedTime.getDay());
 
       if (closedTime.getDay() === 0 || closedTime.getDay() === 6) {
@@ -684,12 +685,10 @@ export default {
         return 'frequenter-row';
       } else if (row.insuranceStatus === "Y") {
         return 'insurance-row';
-      } else if (row.extraTime >= 15) {
+      } else if(row.timeStatus == '1'||row.timeStatus == '2'){
         return 'addTime-row'
-      } else if(row.isAssign == '2'){
-        return 'addTime-row'
-      }else if (Date.parse(rowEndTime) > closedTime) {
-        row.isAssign = '2'
+      }else if (Date.parse(rowEndTime.replace(/-/g,"/")) > closedTime) {
+        row.timeStatus = '2'
         this.crud.crudMethod.edit(row)
         return 'addTime-row'
       }
@@ -862,6 +861,16 @@ export default {
   .el-table .tolerance-row2 {
     background: #f171c1;
   }
+  .extraTime.el-input-number.is-controls-right .el-input__inner{
+    padding-left: 15px;
+    padding-right: 50px;
+    background-color: #FBCD77;
+  }
+  /*.extraTime ::v-deep.el-input-number::v-deep.is-controls-right ::v-deep.el-input__inner{*/
+  /*  padding-left: 15px;*/
+  /*  padding-right: 50px;*/
+  /*  background-color: palegoldenrod;*/
+  /*}*/
 </style>
 <style scoped lang="scss">
   /*.el-form-item__label {*/
@@ -876,12 +885,12 @@ export default {
   /*  box-sizing: border-box;*/
   /*}*/
   /*一行form*/
+
   .el-form-item label:after {
     content: "";
     display: inline-block;
     width: 100%;
   }
-
   .el-form-item__label {
     text-align: justify;
     height: 50px;
@@ -890,6 +899,7 @@ export default {
   .el-form-item.is-required .el-form-item__label:before {
     content: none !important;
   }
+
   .timeLineTitle {
     float: right;
     display: flex;
@@ -924,6 +934,9 @@ export default {
     .toleranceStart {
       background-color: #f171c1;
     }
+  }
+  .Ing {
+    background-color: #9ec3bd;
   }
 </style>
 
