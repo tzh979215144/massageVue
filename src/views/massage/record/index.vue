@@ -208,13 +208,13 @@
 <!--              <el-time-picker v-model="form.time2" type="datetime" style="width: 120px;" />-->
           <el-divider content-position="left"><i class="el-icon-bank-card"></i></el-divider>
           <el-form-item label="CASH">
-            <el-input-number v-model="form.cash"  :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form)"/>
+            <el-input-number v-model="form.cash"  :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form,'CASH')"/>
           </el-form-item>
           <el-form-item label="CARD">
-            <el-input-number v-model="form.card" :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form)"/>
+            <el-input-number v-model="form.card" :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form,'NAB')"/>
           </el-form-item>
           <el-form-item label="INS" class="ins">
-            <el-input-number v-model="form.insurance" :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form)"/>
+            <el-input-number v-model="form.insurance" :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form,'INS')"/>
 
           </el-form-item>
           <el-form-item label="保险" class="ins">
@@ -240,7 +240,7 @@
             <el-input v-model="form.income" :disabled="true" style="width: 130px;" />
           </el-form-item>
           <el-form-item label="GV/OFF">
-            <el-input-number v-model="form.gvOff" :precision="2" :min="0" style="width: 130px;" controls-position="right" @change="updateFormIncome(form)"/>
+            <el-input-number v-model="form.gvOff" :precision="2" :min="0" style="width: 130px;" controls-position="right" @change="updateFormIncome(form,'GV/OFF')"/>
           </el-form-item>
           <el-divider content-position="left"><i class="el-icon-s-custom"></i></el-divider>
           <el-form-item label="客人">
@@ -346,22 +346,22 @@
         </el-table-column>
         <el-table-column align="center" prop="cash" label="CASH" >
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.cash"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
+            <el-input-number v-model="scope.row.cash"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'CASH')"/>
           </template>
         </el-table-column>
         <el-table-column align="center" prop="card" label="EFPOS" >
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.card"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
+            <el-input-number v-model="scope.row.card"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'NAB')"/>
           </template>
         </el-table-column>
         <el-table-column align="center" prop="insurance" label="INS" >
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.insurance"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
+            <el-input-number v-model="scope.row.insurance"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'INS')"/>
           </template>
         </el-table-column>
         <el-table-column align="center" prop="gvOff" label="GV/OFF" >
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.gvOff"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row)"/>
+            <el-input-number v-model="scope.row.gvOff"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'GV/OFF')"/>
           </template>
         </el-table-column>
         <el-table-column align="center" sortable prop="startTime" label="预约开始"
@@ -440,8 +440,8 @@ import { getShops } from '@/api/massage/shop'
 import myDatepicker from 'vue-datepicker/vue-datepicker-es6.vue'
 import moment from 'moment'
 import {getWorkMassagers} from '@/api/massage/shopMassager'
-// status 给容忍状态用，
-const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null,timeStatus:'0'}
+// status 给容忍状态用，timeStatus 标识加班加时（算工资），extraType 标识加时付款类型，用来导出数据
+const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null,timeStatus:'0',extraType:null}
 export default {
   name: 'MassageRecord',
   components: { pagination, crudOperation, rrOperation, udOperation, myDatepicker },
@@ -558,7 +558,6 @@ export default {
         }].concat(data)
 
       })
-      console.log('dddd')
     },
     initMassager: function(queryParam) {
       if (queryParam.shopId !== undefined&&queryParam.shopId !==null) {
@@ -647,11 +646,8 @@ export default {
       return data
     },
     handleAndUpdateTime(data) {
-      console.log(data)
 
       data = this.handleTime(data)
-      console.log(data)
-
       this.crud.crudMethod.edit(data)
     },
     // 表格颜色方法
@@ -694,13 +690,17 @@ export default {
       }
     },
     // 更新表格总收入
-    updateTableIncome(data){
-      data = this.updateFormIncome(data)
+    updateTableIncome(data,extraType){
+      data = this.updateFormIncome(data,extraType)
       // 更新数据
       this.crud.crudMethod.edit(data)
     },
     // 更新表单总收入
-    updateFormIncome(data){
+    updateFormIncome(data,extraType){
+      // 如果有加时，记录加时付款类型
+      if (data.duration > 0) {
+        data.extraType = extraType
+      }
       if (data.cash == undefined) {
         data.cash = 0
       }
@@ -713,8 +713,6 @@ export default {
       if (data.gvOff == undefined) {
         data.gvOff = 0
       }
-      console.log(data.insurance)
-
       if (data.insurance !== 0) {
         data.insuranceStatus = 'Y'
       }else {
@@ -784,7 +782,6 @@ export default {
       let countDoing = 0;
       let filterStartTime = this.tableFilter.startTime.split(':').join('')
       let hours = parseInt(this.tableFilter.duration/60)
-      console.log(hours)
       let endTime = this.tableFilter.startTime.split(':')
       let duration = hours >= 1 ? (this.tableFilter.duration - 60 * hours):this.tableFilter.duration
       endTime[0] = parseInt(endTime[0])+hours
@@ -804,11 +801,8 @@ export default {
       let result = data.filter(item => {
         // filter()对象遍历,true 返回对象参数值,如果多条数据,自动使用数组拼接
         let tableStartTime = (item.time+'').split(':').join('')
-        console.log(tableStartTime)
-
         let tableEndTime = (item.time2+'').split(':').join('')
         if (filterStartTime <= tableEndTime && this.tableFilter.endTime >=tableStartTime) {
-          console.log(this.tableFilter.endTime+'---'+tableStartTime)
           countDoing++
           if (tableEndTime - filterStartTime <= this.tableFilter.tolerance) {
               item.status = '1'
@@ -822,7 +816,6 @@ export default {
           return item
         }
       })
-      console.log(toleranceStatus)
       let frees = this.workMassagers.length-1 - countDoing
       this.$notify({
         title: (frees>0?'还可以接'+frees+'个':'做不了啦')+''+(toleranceStatus=='Y'?'红色的可以考虑哦':''),
