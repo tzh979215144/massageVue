@@ -118,6 +118,20 @@
         :step="5" :min="0" :max="150" :rows="3" style="width: 150px;"
       />
       <el-button :loading="crud.status.cu === 2" type="success" plain round icon="el-icon-check" size="mini" @click="handlesearch(crud.data)">查询时间安排</el-button>
+      <label class="el-form-item-label">Lucky One</label>
+      <el-select v-model="lastWorkMassager.id" filterable placeholder="请选择" @focus="updateWorkMassagers(query)"  style="width: 130px;">
+        <el-option
+          v-for="item in workMassagers"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id"
+          :disabled="true"
+          class="lastWorker"
+          :style="{'background-color':item.status == 'ing'?'#9ec3bd':'#FFFFFF'}">
+          <span style="float: left">{{ item.name }}</span>
+          <span v-if="{Ing:item.status == 'ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.endTime }}</span>
+        </el-option>
+      </el-select>
       <!--表单组件-->
       <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="500px">
         <el-form class="normal" :inline="true" ref="form" :model="form" :rules="rules" size="small" label-width="80px">
@@ -284,7 +298,7 @@
 <!--        </el-table-column>-->
         <el-table-column align="center" sortable prop="massagerId" label="按摩师">
           <template slot-scope="scope">
-            <el-select size="mini" v-model="scope.row.massagerId" style="width: 90px;" filterable placeholder="请选择" @change="crud.crudMethod.edit(scope.row)">
+            <el-select size="mini" v-model="scope.row.massagerId" style="width: 90px;" filterable placeholder="请选择" @focus="updateWorkMassagers(query)" @change="crud.crudMethod.edit(scope.row)">
               <el-option
                 v-for="item in workMassagers"
                 :key="item.id"
@@ -342,7 +356,7 @@
 <!--            {{ dict.label.mark[scope.row.mark] }}-->
 <!--          </template>-->
 <!--        </el-table-column>-->
-        <el-table-column align="center" prop="income" label="总金额" >
+        <el-table-column align="center" prop="income" label="总收入" >
         </el-table-column>
         <el-table-column align="center" prop="cash" label="CASH" >
           <template slot-scope="scope">
@@ -485,6 +499,11 @@ export default {
         id:16,
         name:"默认"
       }],
+      // 记录上活优先级最高的人
+      lastWorkMassager:{
+        id:16,
+        name:"默认"
+      },
       massagers: [{
         id:16,
         name:"默认"
@@ -523,7 +542,7 @@ export default {
   },
   mounted() {
     this.initMassager(this.query)
-
+    this.updateWorkMassagers(this.query)
   },
   created() {
     this.$set(this.query,'startTime',this.initDate)
@@ -556,6 +575,7 @@ export default {
           id:16,
           name:"默认"
         }].concat(data)
+        this.lastWorkMassager =this.workMassagers[1]
 
       })
     },
@@ -718,8 +738,8 @@ export default {
       }else {
         data.insuranceStatus = 'N'
       }
-      //关系：总金额=其余所有相加
-      data.income = data.cash+data.insurance+data.card+data.gvOff
+      //关系：总收入=其余所有相加(不包含礼券）
+      data.income = data.cash+data.insurance+data.card
       return data
     },
     getSummaries(param) {
@@ -858,6 +878,10 @@ export default {
     padding-left: 15px;
     padding-right: 50px;
     background-color: #FBCD77;
+  }
+  .lastWorker.el-select-dropdown__item.is-disabled {
+    color: #4f59d0;
+    cursor: not-allowed;
   }
   /*.extraTime ::v-deep.el-input-number::v-deep.is-controls-right ::v-deep.el-input__inner{*/
   /*  padding-left: 15px;*/
