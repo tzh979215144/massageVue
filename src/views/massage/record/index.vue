@@ -4,8 +4,8 @@
     <div class="head-container">
       <div v-if="crud.props.searchToggle">
         <!-- 搜索 -->
-        <label class="el-form-item-label">店铺ID</label>
-        <el-select v-model="query.shopId" clearable placeholder="店铺名" style="width: 185px;" class="filter-item" @change="initMassager(query)" @keyup.enter.native="crud.toQuery">
+        <label class="el-form-item-label">店铺</label>
+        <el-select v-model="query.shopId" clearable placeholder="店铺名" style="width: 130px;" class="filter-item" @change="initMassager(query)" @keyup.enter.native="crud.toQuery">
           <el-option
             v-for="item in shops"
             :key="item.id"
@@ -13,8 +13,8 @@
             :value="item.id"
           />
         </el-select>
-        <label class="el-form-item-label">按摩师ID</label>
-        <el-select v-model="query.massagerId" clearable placeholder="按摩师名" style="width: 185px;" class="filter-item" @change="crud.toQuery" @keyup.enter.native="crud.toQuery">
+        <label class="el-form-item-label">按摩师</label>
+        <el-select v-model="query.massagerId" clearable placeholder="按摩师名" style="width: 130px;" class="filter-item" @change="crud.toQuery" @keyup.enter.native="crud.toQuery">
           <el-option
             v-for="item in workMassagers"
             :key="item.id"
@@ -31,8 +31,9 @@
 <!--            :value="item.id"-->
 <!--          />-->
 <!--        </el-select>-->
-        <label class="el-form-item-label">开始时间</label>
+        <label class="el-form-item-label">Day</label>
         <el-date-picker
+          class="filter-item"
           @change="initMassager(query)"
           v-model="query.startTime"
           type="daterange"
@@ -42,8 +43,8 @@
           end-placeholder="结束日期"
           :default-time="['00:00:00', '23:59:59']"
         />
-        <label class="el-form-item-label">是否老客</label>
-        <el-select v-model="query.isAssign" clearable placeholder="请选择" @change="crud.toQuery" style="width: 100px;">
+        <label class="el-form-item-label">老客</label>
+        <el-select v-model="query.isAssign" clearable placeholder="请选择" class="filter-item" @change="crud.toQuery" style="width: 100px;">
           <el-option
             v-for="item in dict.is_assign"
             :key="item.id"
@@ -51,8 +52,8 @@
             :value="item.value"
           />
         </el-select>
-        <label class="el-form-item-label">是否保险</label>
-        <el-select v-model="query.insuranceStatus" clearable placeholder="请选择" @change="crud.toQuery" style="width: 100px;">
+        <label class="el-form-item-label">保险</label>
+        <el-select v-model="query.insuranceStatus" clearable placeholder="请选择" class="filter-item" @change="crud.toQuery" style="width: 100px;">
           <el-option
             v-for="item in insuranceStatusList"
             :key="item.id"
@@ -60,6 +61,7 @@
             :value="item.value"
           />
         </el-select>
+
 <!--        <label class="el-form-item-label">按摩评分</label>-->
 <!--        <el-slider-->
 <!--          v-model="query.mark"-->
@@ -68,10 +70,6 @@
 <!--          :max="5"-->
 <!--        />-->
         <rrOperation :crud="crud" />
-      </div>
-
-      <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
-      <crudOperation :permission="permission" >
         <div slot = 'right' class="timeLineTitle">
           <div class="timeLineItem">
             <div class="addTimeTip timeLineStatus" />
@@ -94,9 +92,26 @@
             <div>建议推迟预约时间</div>
           </div>
         </div>
+      </div>
+
+      <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
+      <crudOperation :permission="permission" >
+        <div slot = 'right' class="timeLineTitle">
+            <el-tag size="small" type="">{{incomeLevel.nowLevel}}</el-tag>
+            <el-tooltip class="item" effect="light" placement="top-start">
+              <div slot="content">
+                　<span>距离 {{incomeLevel.closestLevel}} 还有：${{incomeLevel.diffIncome}}</span>
+              </div>
+              <el-progress status="success" :text-inside="true" :stroke-width="26" :percentage="updateLevelPercentage()"></el-progress>
+            </el-tooltip>
+            <el-tag size="medium" type="danger">{{incomeLevel.closestLevel}}</el-tag>
+        </div>
+
+
       </crudOperation>
       <label class="el-form-item-label">预约时间</label>
       <el-time-select
+        class="filter-item"
         v-model="tableFilter.startTime"
         default-value="12:30"
         value-format="HH:mm"
@@ -109,17 +124,19 @@
       />
       <label class="el-form-item-label">时长</label>
       <el-input-number
+        class="filter-item"
         v-model="tableFilter.duration"
         :step="5" :min="0" :max="150" :rows="3" style="width: 150px;"
       />
       <label class="el-form-item-label">Tolerance</label>
       <el-input-number
+        class="filter-item"
         v-model="tableFilter.tolerance"
         :step="5" :min="0" :max="150" :rows="3" style="width: 150px;"
       />
-      <el-button :loading="crud.status.cu === 2" type="success" plain round icon="el-icon-check" size="mini" @click="handlesearch(crud.data)">查询时间安排</el-button>
+      <el-button :loading="crud.status.cu === 2" type="success" class="filter-item" plain round icon="el-icon-check" size="mini" @click="handlesearch(crud.data)">查询时间安排</el-button>
       <label class="el-form-item-label">Lucky One</label>
-      <el-select v-model="lastWorkMassager.id" filterable placeholder="请选择" @focus="updateWorkMassagers(query)"  style="width: 130px;">
+      <el-select v-model="lastWorkMassager.id" filterable placeholder="请选择" class="filter-item" @focus="updateWorkMassagers(query)"  style="width: 130px;">
         <el-option
           v-for="item in workMassagers"
           :key="item.id"
@@ -132,17 +149,61 @@
           <span v-if="{Ing:item.status == 'ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.endTime }}</span>
         </el-option>
       </el-select>
+      <label class="el-form-item-label">状态</label>
+      <el-select v-model="query.orderStatus" clearable style="width: 130px;" class="filter-item" @change="crud.toQuery" @keyup.enter.native="crud.toQuery" >
+        <el-option
+          v-for="item in dict.appointment_status"
+          :key="item.id"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
+<!--      <div class="timeLineTitle">-->
+<!--        <div class="timeLineItem">-->
+<!--          <div class="addTimeTip timeLineStatus" />-->
+<!--          <div>加班加时</div>-->
+<!--        </div>-->
+<!--        <div class="timeLineItem">-->
+<!--          <div class="frequenterTip timeLineStatus" />-->
+<!--          <div>老客</div>-->
+<!--        </div>-->
+<!--        <div class="timeLineItem">-->
+<!--          <div class="insuranceTip timeLineStatus" />-->
+<!--          <div>保险</div>-->
+<!--        </div>-->
+<!--        <div class="timeLineItem">-->
+<!--          <div class="toleranceStart timeLineStatus" />-->
+<!--          <div>建议推迟开始</div>-->
+<!--        </div>-->
+<!--        <div class="timeLineItem">-->
+<!--          <div class="toleranceEnd timeLineStatus" />-->
+<!--          <div>建议推迟预约时间</div>-->
+<!--        </div>-->
+<!--      </div>-->
       <!--表单组件-->
       <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="500px">
         <el-form class="normal" :inline="true" ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-          <el-form-item label="店铺" prop="shopId">
-            <el-select v-model="form.shopId" filterable placeholder="请选择" style="width: 130px;">
+<!--          <el-form-item label="店铺" prop="shopId">-->
+<!--            <el-select v-model="form.shopId" filterable placeholder="请选择" style="width: 130px;">-->
+<!--              <el-option-->
+<!--                v-for="item in shops"-->
+<!--                :key="item.id"-->
+<!--                :label="item.name"-->
+<!--                :value="item.id"-->
+<!--              />-->
+<!--            </el-select>-->
+<!--          </el-form-item>-->
+          <el-form-item label="按摩师" prop="massagerId">
+            <el-select v-model="form.massagerId" filterable placeholder="请选择" @focus="updateWorkMassagers(query)"  style="width: 130px;">
               <el-option
-                v-for="item in shops"
+                v-for="item in workMassagers"
                 :key="item.id"
                 :label="item.name"
                 :value="item.id"
-              />
+                :class="{Ing:item.status == 'ing'}">
+                <span style="float: left">{{ item.name }}</span>
+                <span v-if="{Ing:item.status == 'ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.endTime }}</span>
+              </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="Part">
@@ -159,19 +220,7 @@
               </el-select>
             </el-tooltip>
           </el-form-item>
-          <el-form-item label="按摩师" prop="massagerId">
-            <el-select v-model="form.massagerId" filterable placeholder="请选择" @focus="updateWorkMassagers(query)"  style="width: 130px;">
-              <el-option
-                v-for="item in workMassagers"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              :class="{Ing:item.status == 'ing'}">
-                <span style="float: left">{{ item.name }}</span>
-                <span v-if="{Ing:item.status == 'ing'}" style="float: right; color: #a6404d; font-size: 13px">{{ item.endTime }}</span>
-              </el-option>
-            </el-select>
-          </el-form-item>
+
           <el-form-item label="老客" class="oldGuest">
             <el-switch
               v-model="form.isAssign"
@@ -179,6 +228,15 @@
               active-color="#0D61FF"
               active-value="1"
               inactive-value="0">
+            </el-switch>
+          </el-form-item>
+          <el-form-item label="预约">
+            <el-switch
+              v-model="form.orderStatus"
+              inactive-color="#F4F4F5"
+              active-color="#0D61FF"
+              active-value="0"
+              inactive-value="1">
             </el-switch>
           </el-form-item>
           <el-divider content-position="left"><i class="el-icon-bell"></i></el-divider>
@@ -397,7 +455,7 @@
           </template>
         </el-table-column>
         <el-table-column align="center" sortable prop="time2" width="100" label="预计结束" />
-        <el-table-column prop="info" label="备注" :show-overflow-tooltip="true" width="50"/>
+<!--        <el-table-column prop="info" label="备注" :show-overflow-tooltip="true" width="10"/>-->
         <el-table-column align="center" prop="massageType" label="Part"
                          width="100">
           <template slot-scope="scope">
@@ -426,14 +484,27 @@
             </el-switch>
           </template>
         </el-table-column>
-        <el-table-column v-if="checkPer(['admin','massageRecord:edit','massageRecord:del'])" label="操作" width="150px" align="center">
+        <el-table-column label="到店" width="55" align="center">
           <template slot-scope="scope">
-            <udOperation
-              :data="scope.row"
-              :permission="permission"
-            />
+            <el-switch
+              v-model="scope.row.orderStatus"
+              @change="crud.crudMethod.edit(scope.row)"
+              inactive-color="#f196ba"
+              active-color="#A5E4F1"
+              active-value="1"
+              inactive-value="0">
+            </el-switch>
           </template>
         </el-table-column>
+        <el-table-column v-if="checkPer(['admin','massageRecord:edit','massageRecord:del'])" label="操作" width="150px" align="center">
+        <template slot-scope="scope">
+          <udOperation
+            :data="scope.row"
+            :permission="permission"
+          />
+        </template>
+      </el-table-column>
+
       </el-table>
       <!--分页组件-->
       <pagination />
@@ -454,13 +525,13 @@ import { getShops } from '@/api/massage/shop'
 import myDatepicker from 'vue-datepicker/vue-datepicker-es6.vue'
 import moment from 'moment'
 import {getWorkMassagers} from '@/api/massage/shopMassager'
-// status 给容忍状态用，timeStatus 标识加班加时（算工资），extraType 标识加时付款类型，用来导出数据
-const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null,timeStatus:'0',extraType:null}
+// status 给容忍状态用，timeStatus 标识加班加时（算工资），extraType 标识加时付款类型，用来导出数据，, orderStatus: 预约状态
+const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null,timeStatus:'0',extraType:null, orderStatus: 1 }
 export default {
   name: 'MassageRecord',
   components: { pagination, crudOperation, rrOperation, udOperation, myDatepicker },
   mixins: [presenter(), header(), form(defaultForm), crud()],
-  dicts: ['is_assign', 'mark','massage_type'],
+  dicts: ['is_assign', 'mark','massage_type','appointment_status'],
   cruds() {
     return CRUD({ title: 'Massage_Record', url: 'api/massageRecord', idField: 'id', sort: ['startTime,desc','id,desc'], crudMethod: { ...crudMassageRecord }})
   },
@@ -495,19 +566,23 @@ export default {
         { key: 'mark', display_name: '按摩评分' },
         {key:'startTime',display_name: '开始时间'}
       ],
-      workMassagers: [{
-        id:16,
-        name:"默认"
-      }],
+      workMassagers: [
+        {
+          id:16,
+          name:"默认"
+        }
+      ],
       // 记录上活优先级最高的人
       lastWorkMassager:{
         id:16,
         name:"默认"
       },
-      massagers: [{
-        id:16,
-        name:"默认"
-      }],
+      massagers: [
+        {
+          id:16,
+          name:"默认"
+        }
+      ],
       remedialMassagers: [{
         id:16,
         name:"默认"
@@ -537,7 +612,23 @@ export default {
           label:'否',
           value:'N'
         }
-      ]
+      ],
+      incomeLevel:{
+        closestLevel: '3%',
+        nowLevel:'加油',
+        totalIncome:null,
+        diffPercent:'0',
+        diffIncome:'0'
+
+      },
+      shopIncomeLevel:{
+        id:'1',
+        gap:'200',
+        threePercent:'',
+        fourPercent:'',
+        oneLevel:''
+      }
+
     }
   },
   mounted() {
@@ -571,11 +662,13 @@ export default {
         if (data == undefined || data.length == 0) {
           return;
         }
-        this.workMassagers = [{
-          id:16,
-          name:"默认"
-        }].concat(data)
-        this.lastWorkMassager =this.workMassagers[1]
+        this.workMassagers = data.concat([
+          {
+            id:16,
+            name:"默认"
+          }
+        ])
+        this.lastWorkMassager =this.workMassagers[0]
 
       })
     },
@@ -591,7 +684,13 @@ export default {
         if (data== undefined||data.length == 0) {
           return;
         }
-        this.workMassagers = this.workMassagers.concat(data)
+        // this.workMassagers = this.workMassagers.concat(data)
+        this.workMassagers = data.concat([
+          {
+            id:16,
+            name:"默认"
+          }
+        ])
 
       })
       // 所有按摩师
@@ -606,6 +705,8 @@ export default {
       })
       getShops().then(data => {
         this.shops = data.content
+        this.shopIncomeLevel = this.shops.find(item => item.id == this.query.shopId)
+        console.log(this.shopIncomeLevel)
       })
       this.crud.toQuery(queryParam)
     },
@@ -663,6 +764,20 @@ export default {
       endTime.setTime(queryDay.getTime() + 60000 * (data.duration+data.extraTime))
       data.endTime = moment(endTime).format('YYYY-MM-DD HH:mm:ss')
       data.time2 = moment(endTime).format('HH:mm')
+
+      // 根据时长，默认设置按摩part
+      // if (data.massageType == undefined) {
+        if (data.duration == 60) {
+          data.massageType = 'FB'
+        }else if (data.duration == 30) {
+          data.massageType = 'NSB'
+        }else if (data.duration == 45) {
+          data.massageType = 'NSBL'
+        }else if (data.duration == 90) {
+          data.massageType = 'FB+R'
+        }
+      // }
+
       return data
     },
     handleAndUpdateTime(data) {
@@ -691,6 +806,19 @@ export default {
         closedTime.setMinutes(35)
         closedTime.setSeconds(0)
       }
+      // 加班-加时状态更新
+      if (Date.parse(rowEndTime.replace(/-/g,"/")) > closedTime) {
+        if (row.timeStatus == '1') {
+          // 加班又加时
+          row.timeStatus = '3'
+        } else {
+          // 加班
+          row.timeStatus = '2'
+        }
+        this.crud.crudMethod.edit(row)
+      }
+
+
       // 周六日 五点整，周四是九点整，其余时间五点半
       // 可容忍的冲突
       if (row.status == '1') {
@@ -703,11 +831,8 @@ export default {
         return 'insurance-row';
       } else if(row.timeStatus == '1'||row.timeStatus == '2'){
         return 'addTime-row'
-      }else if (Date.parse(rowEndTime.replace(/-/g,"/")) > closedTime) {
-        row.timeStatus = '2'
-        this.crud.crudMethod.edit(row)
-        return 'addTime-row'
       }
+
     },
     // 更新表格总收入
     updateTableIncome(data,extraType){
@@ -786,6 +911,13 @@ export default {
           } else if (index === 3 || index === 4) {
             sums[index] += ' mins'
           } else {
+            // 第六个总收入记录
+            if (index === 6) {
+              this.incomeLevel.totalIncome = sums[index]
+              console.log(this.incomeLevel.totalIncome+'total')
+              //调用更新进度
+              // this.updateLevelPercentage()
+            }
             sums[index] = '$ ' + sums[index]
           }
         } else {
@@ -844,6 +976,44 @@ export default {
       })
       return result
     },
+    //爆档进度条
+    updateLevelPercentage() {
+      // return percentage === 100 ? '满' : `${percentage}%`;
+      console.log(this.shopIncomeLevel)
+      let total = this.incomeLevel.totalIncome
+      if (total <= this.shopIncomeLevel.threePercent) {
+        this.incomeLevel.nowLevel = '加油'
+        this.incomeLevel.closestLevel = '3%'
+        console.log(this.shopIncomeLevel.threePercent-total)
+        this.incomeLevel.diffIncome = (this.shopIncomeLevel.threePercent-total).toFixed(2)
+        this.incomeLevel.diffPercent = (total/this.shopIncomeLevel.threePercent*100).toFixed(2)
+      }else if (total <= this.shopIncomeLevel.fourPercent) {
+        this.incomeLevel.nowLevel = '3%'
+        this.incomeLevel.closestLevel = '4%'
+        this.incomeLevel.diffIncome = (this.shopIncomeLevel.fourPercent-total).toFixed(2)
+        // this.incomeLevel.diffPercent = (total/this.shopIncomeLevel.fourPercent*100).toFixed(2)
+        this.incomeLevel.diffPercent = (100-(this.incomeLevel.diffIncome/(this.shopIncomeLevel.fourPercent-this.shopIncomeLevel.threePercent))*100).toFixed(2)
+      }else if (total <= this.shopIncomeLevel.oneLevel) {
+        this.incomeLevel.nowLevel = '4%'
+        this.incomeLevel.closestLevel = '一档'
+        this.incomeLevel.diffIncome = (this.shopIncomeLevel.oneLevel-total).toFixed(2)
+        // this.incomeLevel.diffPercent = (total/this.shopIncomeLevel.oneLevel*100).toFixed(2)
+        this.incomeLevel.diffPercent = (100-(this.incomeLevel.diffIncome/(this.shopIncomeLevel.oneLevel-this.shopIncomeLevel.fourPercent))*100).toFixed(2)
+      }else if (total > this.shopIncomeLevel.oneLevel) {
+        //2603.2 - 2000=603.2 603.2/250=2
+        // 2000 250 2130
+        let num = parseInt((total-this.shopIncomeLevel.oneLevel)/this.shopIncomeLevel.gap)
+        this.incomeLevel.diffIncome = ((this.shopIncomeLevel.oneLevel+(num+1)*this.shopIncomeLevel.gap)-total).toFixed(2)
+        // this.incomeLevel.diffPercent = (total/(this.shopIncomeLevel.oneLevel+(num+1)*this.shopIncomeLevel.gap)*100).toFixed(2)
+        this.incomeLevel.diffPercent = (100-(this.incomeLevel.diffIncome/this.shopIncomeLevel.gap)*100).toFixed(2)
+        this.incomeLevel.nowLevel = (num+1)+'档'
+        this.incomeLevel.closestLevel = (num+2)+'档'
+        console.log(num)
+        // this.incomeLevel.closestLevel =
+      }
+      console.log(this.incomeLevel.diffPercent)
+      return this.incomeLevel.diffPercent
+    }
   }
 }
 </script>
@@ -882,6 +1052,10 @@ export default {
   .lastWorker.el-select-dropdown__item.is-disabled {
     color: #4f59d0;
     cursor: not-allowed;
+  }
+  .el-progress-bar__outer{
+    height: 26px;
+    width: 200px;
   }
   /*.extraTime ::v-deep.el-input-number::v-deep.is-controls-right ::v-deep.el-input__inner{*/
   /*  padding-left: 15px;*/
@@ -955,5 +1129,6 @@ export default {
   .Ing {
     background-color: #9ec3bd;
   }
+
 </style>
 

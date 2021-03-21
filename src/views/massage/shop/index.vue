@@ -36,6 +36,18 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="档位间隔" prop="gap">
+            <el-input-number v-model="form.gap" :step="50" :min="0" :max="1000" :rows="3" style="width: 370px;" />
+          </el-form-item>
+          <el-form-item label="3%" prop="threePercent">
+            <el-input-number v-model="form.threePercent" :step="50" :min="0" :rows="3" style="width: 370px;" />
+          </el-form-item>
+          <el-form-item label="4%" prop="fourPercent">
+            <el-input-number v-model="form.fourPercent" :step="50" :min="0" :rows="3" style="width: 370px;" />
+          </el-form-item>
+          <el-form-item label="一档" prop="oneLevel">
+            <el-input-number v-model="form.oneLevel" :step="50" :min="0" :rows="3" style="width: 370px;" />
+          </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button type="text" @click="crud.cancelCU">取消</el-button>
@@ -66,7 +78,10 @@
           <!--          <template slot-scope="scope">-->
           <!--            {{ dict.label.sex[scope.row.sex] }}-->
           <!--          </template>-->
-        </el-table-column>
+        <el-table-column prop="gap" label="档位间隔" />
+        <el-table-column prop="threePercent" label="3%" />
+        <el-table-column prop="fourPercent" label="4%" />
+        <el-table-column prop="oneLevel" label="一档" />
         <el-table-column v-if="checkPer(['admin','shop:edit','shop:del'])" label="操作" width="150px" align="center">
           <template slot-scope="scope">
             <udOperation
@@ -91,7 +106,7 @@ import udOperation from '@crud/UD.operation'
 import pagination from '@crud/Pagination'
 import { getMassagers } from '@/api/massage/massager'
 
-const defaultForm = { id: null, name: null, phone: null, website: null, managerId: null }
+const defaultForm = { id: null, name: null, phone: null, website: null, managerId: null, gap: null, threePercent: null, fourPercent: null, oneLevel: null }
 export default {
   name: 'Shop',
   components: { pagination, crudOperation, rrOperation, udOperation },
@@ -112,6 +127,18 @@ export default {
         ],
         managerId: [
           { required: true, message: '店长ID不能为空', trigger: 'blur' }
+        ],
+        gap: [
+          { required: true, message: '档位间隔不能为空', trigger: 'blur' }
+        ],
+        threePercent: [
+          { required: true, message: '3%不能为空', trigger: 'blur' }
+        ],
+        fourPercent: [
+          { required: true, message: '4%不能为空', trigger: 'blur' }
+        ],
+        oneLevel: [
+          { required: true, message: '一档不能为空', trigger: 'blur' }
         ]
       },
       queryTypeOptions: [
