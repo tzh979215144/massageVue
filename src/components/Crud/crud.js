@@ -52,8 +52,8 @@ function CRUD(options) {
     },
     // 自定义一些扩展属性
     props: {},
-    // 在主页准备
-    queryOnPresenterCreated: true,
+    // 在主页准备-改为false，手动获取数据
+    queryOnPresenterCreated: false,
     // 调试开关
     debug: false
   }
@@ -91,7 +91,7 @@ function CRUD(options) {
       // 页码
       page: 0,
       // 每页数据条数
-      size: 50,
+      size: 100,
       // 总数据条数
       total: 0
     },
