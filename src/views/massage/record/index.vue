@@ -158,7 +158,9 @@
           :value="item.value"
         />
       </el-select>
-<!--      <div class="timeLineTitle">-->
+<!--      <span>{{$root.incomeLevelRes}}</span>-->
+
+      <!--      <div class="timeLineTitle">-->
 <!--        <div class="timeLineItem">-->
 <!--          <div class="addTimeTip timeLineStatus" />-->
 <!--          <div>加班加时</div>-->
@@ -194,7 +196,7 @@
 <!--            </el-select>-->
 <!--          </el-form-item>-->
           <el-form-item label="按摩师" prop="massagerId">
-            <el-select v-model="form.massagerId" filterable placeholder="请选择" @focus="updateWorkMassagers(query)"  style="width: 130px;">
+            <el-select v-model="form.massagerId" filterable placeholder="请选择" @change="handleFormShopId(form)" @focus="updateWorkMassagers(query)"  style="width: 130px;">
               <el-option
                 v-for="item in workMassagers"
                 :key="item.id"
@@ -240,7 +242,7 @@
             </el-switch>
           </el-form-item>
           <el-divider content-position="left"><i class="el-icon-bell"></i></el-divider>
-          <el-form-item label="时长" prop="duration">
+          <el-form-item label="时长" prop="duration" >
             <el-input-number
               v-model="form.duration"
               :step="5" :min="0" :max="150" :rows="3" style="width: 130px;"
@@ -280,13 +282,13 @@
 <!--              <el-time-picker v-model="form.time2" type="datetime" style="width: 120px;" />-->
           <el-divider content-position="left"><i class="el-icon-bank-card"></i></el-divider>
           <el-form-item label="CASH">
-            <el-input-number v-model="form.cash"  :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form,'CASH')"/>
+            <el-input-number v-model="form.cash"  :precision="2" style="width: 130px;" @change="updateFormIncome(form,'CASH')"/>
           </el-form-item>
           <el-form-item label="CARD">
-            <el-input-number v-model="form.card" :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form,'NAB')"/>
+            <el-input-number v-model="form.card" :precision="2" style="width: 130px;" @change="updateFormIncome(form,'NAB')"/>
           </el-form-item>
           <el-form-item label="INS" class="ins">
-            <el-input-number v-model="form.insurance" :precision="2" :min="0" style="width: 130px;" @change="updateFormIncome(form,'INS')"/>
+            <el-input-number v-model="form.insurance" :precision="2" style="width: 130px;" @change="updateFormIncome(form,'INS')"/>
 
           </el-form-item>
           <el-form-item label="保险" class="ins">
@@ -312,7 +314,7 @@
             <el-input v-model="form.income" :disabled="true" style="width: 130px;" />
           </el-form-item>
           <el-form-item label="GV/OFF">
-            <el-input-number v-model="form.gvOff" :precision="2" :min="0" style="width: 130px;" controls-position="right" @change="updateFormIncome(form,'GV/OFF')"/>
+            <el-input-number v-model="form.gvOff" :precision="2" style="width: 130px;" controls-position="right" @change="updateFormIncome(form,'GV/OFF')"/>
           </el-form-item>
           <el-divider content-position="left"><i class="el-icon-s-custom"></i></el-divider>
           <el-form-item label="客人">
@@ -418,26 +420,27 @@
         </el-table-column>
         <el-table-column align="center" prop="cash" label="CASH" >
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.cash"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'CASH')"/>
+            <el-input-number v-model="scope.row.cash"  style="width: 100px;" size="mini" controls-position="right"    :max="150" :rows="3" @change="updateTableIncome(scope.row,'CASH')"/>
           </template>
         </el-table-column>
         <el-table-column align="center" prop="card" label="EFPOS" >
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.card"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'NAB')"/>
-          </template>
-        </el-table-column>
-        <el-table-column align="center" prop="insurance" label="INS" >
-          <template slot-scope="scope">
-            <el-input-number v-model="scope.row.insurance"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'INS')"/>
+            <el-input-number v-model="scope.row.card"  style="width: 100px;" size="mini" controls-position="right"    :max="150" :rows="3" @change="updateTableIncome(scope.row,'NAB')"/>
           </template>
         </el-table-column>
         <el-table-column align="center" prop="gvOff" label="GV/OFF" >
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.gvOff"  style="width: 100px;" size="mini" controls-position="right" :precision="2" :step="1" :min="0" :max="150" :rows="3" @change="updateTableIncome(scope.row,'GV/OFF')"/>
+            <el-input-number v-model="scope.row.gvOff"  style="width: 100px;" size="mini" controls-position="right"  :max="150" :rows="3" @change="updateTableIncome(scope.row,'GV/OFF')"/>
           </template>
         </el-table-column>
+        <el-table-column align="center" prop="insurance" label="HICAF" >
+          <template slot-scope="scope">
+            <el-input-number v-model="scope.row.insurance"  style="width: 100px;" size="mini" controls-position="right"    :max="150" :rows="3" @change="updateTableIncome(scope.row,'INS')"/>
+          </template>
+        </el-table-column>
+
         <el-table-column align="center" sortable prop="startTime" label="预约开始"
-        width="130">
+        width="115">
           <template slot-scope="scope">
             <el-time-select
               v-model="scope.row.time"
@@ -447,7 +450,7 @@
               :picker-options="{
                 start: '08:30',
                 step: '00:05',
-                end: '20:30'
+                end: '23:30'
               }"
               style="width: 100%"
               @change="handleAndUpdateTime(scope.row)"
@@ -524,7 +527,7 @@ import { getGuests } from '@/api/massage/guest'
 import { getShops } from '@/api/massage/shop'
 import myDatepicker from 'vue-datepicker/vue-datepicker-es6.vue'
 import moment from 'moment'
-import {getWorkMassagers} from '@/api/massage/shopMassager'
+import {getWorkMassagers,getGiftVouchersTotal} from '@/api/massage/shopMassager'
 // status 给容忍状态用，timeStatus 标识加班加时（算工资），extraType 标识加时付款类型，用来导出数据，, orderStatus: 预约状态
 const defaultForm = { id: null, shopId: 1, massagerId: 16, guestId: 2, isAssign: "0", duration: 30, remedialId: 16, mark: 5, income: 0, cash: 0, card: 0, insurance: 0,extraTime: 0, startTime: new Date(), endTime: null, time:null, time2:null,insuranceStatus:"N",info:null,gvOff:0,status:null,timeStatus:'0',extraType:null, orderStatus: 1 }
 export default {
@@ -533,7 +536,7 @@ export default {
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['is_assign', 'mark','massage_type','appointment_status'],
   cruds() {
-    return CRUD({ title: 'Massage_Record', url: 'api/massageRecord', idField: 'id', sort: ['startTime,desc','id,desc'], crudMethod: { ...crudMassageRecord }})
+    return CRUD({ title: 'Record', url: 'api/massageRecord', idField: 'id', sort: ['startTime,desc','id,desc'], crudMethod: { ...crudMassageRecord }})
   },
   data() {
     return {
@@ -590,7 +593,7 @@ export default {
       guests: [],
       shops: [],
       filterParam: {
-        shopId: 1,
+        shopId: this.$root.shopId,
         nowDay: new Date()
       },
       tableFilter:{
@@ -627,7 +630,8 @@ export default {
         threePercent:'',
         fourPercent:'',
         oneLevel:''
-      }
+      },
+      giftVouchersTotal:0
 
     }
   },
@@ -637,8 +641,7 @@ export default {
   },
   created() {
     this.$set(this.query,'startTime',this.initDate)
-    this.$set(this.query,'shopId',1)
-    // this.$set(this.form,'time',new Date().format('HH:mm'))
+    this.$set(this.query,'shopId',this.$root.shopId)
   },
   computed: {
     dataList:function() {
@@ -675,6 +678,8 @@ export default {
     initMassager: function(queryParam) {
       if (queryParam.shopId !== undefined&&queryParam.shopId !==null) {
         this.filterParam.shopId = queryParam.shopId
+        this.$root.shopId = queryParam.shopId
+        console.log(this.$root.shopId+"======")
       }
       if (queryParam.startTime !== undefined&&queryParam.startTime !== null) {
         this.filterParam.nowDay = queryParam.startTime[0]
@@ -693,6 +698,13 @@ export default {
         ])
 
       })
+      getGiftVouchersTotal(param).then(data => {
+        if (data== undefined||data.length == 0) {
+          return;
+        }
+        this.giftVouchersTotal = data
+
+      })
       // 所有按摩师
       getMassagers().then(data => {
         this.massagers = data
@@ -706,7 +718,6 @@ export default {
       getShops().then(data => {
         this.shops = data.content
         this.shopIncomeLevel = this.shops.find(item => item.id == this.query.shopId)
-        console.log(this.shopIncomeLevel)
       })
       this.crud.toQuery(queryParam)
     },
@@ -732,6 +743,7 @@ export default {
       return result.name
     },
     handleTime(data){
+      this.handleFormShopId(data)
       // 加时收钱超过15刀-加时=1，加班的话，为2
       if (data.extraTime >= 15 || (data.extraTime >= 10 && data.duration <= 20)) {
         data.timeStatus = '1'
@@ -758,11 +770,12 @@ export default {
       queryDay.setHours((inputTime+'').substr(0,2))
       queryDay.setMinutes((inputTime+'').substr(3,2))
       // todo 是否有时区问题
-      data.startTime = moment(queryDay).format('YYYY-MM-DD HH:mm:ss')
+      data.startTime = moment(queryDay).format('YYYY-MM-DD HH:mm:00')
       data.time = moment(queryDay).format('HH:mm')
       let endTime = new Date()
+      // console.log(queryDay.getTime()/60000)
       endTime.setTime(queryDay.getTime() + 60000 * (data.duration+data.extraTime))
-      data.endTime = moment(endTime).format('YYYY-MM-DD HH:mm:ss')
+      data.endTime = moment(endTime).format('YYYY-MM-DD HH:mm:00')
       data.time2 = moment(endTime).format('HH:mm')
 
       // 根据时长，默认设置按摩part
@@ -784,6 +797,10 @@ export default {
 
       data = this.handleTime(data)
       this.crud.crudMethod.edit(data)
+    },
+    //将表单店铺id设为全局的shopId
+    handleFormShopId(form) {
+      form.shopId = this.$root.shopId
     },
     // 表格颜色方法
     tableRowClassName({row, rowIndex}) {
@@ -914,7 +931,6 @@ export default {
             // 第六个总收入记录
             if (index === 6) {
               this.incomeLevel.totalIncome = sums[index]
-              console.log(this.incomeLevel.totalIncome+'total')
               //调用更新进度
               // this.updateLevelPercentage()
             }
@@ -979,12 +995,12 @@ export default {
     //爆档进度条
     updateLevelPercentage() {
       // return percentage === 100 ? '满' : `${percentage}%`;
-      console.log(this.shopIncomeLevel)
-      let total = this.incomeLevel.totalIncome
+      let total = this.incomeLevel.totalIncome+this.giftVouchersTotal
+      // 1档以及以上不算卖礼券档金额
+      let total2 = this.incomeLevel.totalIncome
       if (total <= this.shopIncomeLevel.threePercent) {
         this.incomeLevel.nowLevel = '加油'
         this.incomeLevel.closestLevel = '3%'
-        console.log(this.shopIncomeLevel.threePercent-total)
         this.incomeLevel.diffIncome = (this.shopIncomeLevel.threePercent-total).toFixed(2)
         this.incomeLevel.diffPercent = (total/this.shopIncomeLevel.threePercent*100).toFixed(2)
       }else if (total <= this.shopIncomeLevel.fourPercent) {
@@ -993,25 +1009,30 @@ export default {
         this.incomeLevel.diffIncome = (this.shopIncomeLevel.fourPercent-total).toFixed(2)
         // this.incomeLevel.diffPercent = (total/this.shopIncomeLevel.fourPercent*100).toFixed(2)
         this.incomeLevel.diffPercent = (100-(this.incomeLevel.diffIncome/(this.shopIncomeLevel.fourPercent-this.shopIncomeLevel.threePercent))*100).toFixed(2)
-      }else if (total <= this.shopIncomeLevel.oneLevel) {
+      }else if (total2 <= this.shopIncomeLevel.oneLevel) {
         this.incomeLevel.nowLevel = '4%'
         this.incomeLevel.closestLevel = '一档'
-        this.incomeLevel.diffIncome = (this.shopIncomeLevel.oneLevel-total).toFixed(2)
+        this.incomeLevel.diffIncome = (this.shopIncomeLevel.oneLevel-total2).toFixed(2)
         // this.incomeLevel.diffPercent = (total/this.shopIncomeLevel.oneLevel*100).toFixed(2)
-        this.incomeLevel.diffPercent = (100-(this.incomeLevel.diffIncome/(this.shopIncomeLevel.oneLevel-this.shopIncomeLevel.fourPercent))*100).toFixed(2)
-      }else if (total > this.shopIncomeLevel.oneLevel) {
+        if (this.incomeLevel.diffIncome > this.shopIncomeLevel.oneLevel - this.shopIncomeLevel.fourPercent) {
+          // this.incomeLevel.diffPercent = (total2 / this.shopIncomeLevel.oneLevel * 100).toFixed(2)
+          this.incomeLevel.diffPercent = (0).toFixed(2)
+        } else {
+          this.incomeLevel.diffPercent = (100-(this.incomeLevel.diffIncome/(this.shopIncomeLevel.oneLevel-this.shopIncomeLevel.fourPercent))*100).toFixed(2)
+        }
+      }else if (total2 > this.shopIncomeLevel.oneLevel) {
         //2603.2 - 2000=603.2 603.2/250=2
         // 2000 250 2130
-        let num = parseInt((total-this.shopIncomeLevel.oneLevel)/this.shopIncomeLevel.gap)
-        this.incomeLevel.diffIncome = ((this.shopIncomeLevel.oneLevel+(num+1)*this.shopIncomeLevel.gap)-total).toFixed(2)
+        let num = parseInt((total2-this.shopIncomeLevel.oneLevel)/this.shopIncomeLevel.gap)
+        this.incomeLevel.diffIncome = ((this.shopIncomeLevel.oneLevel+(num+1)*this.shopIncomeLevel.gap)-total2).toFixed(2)
         // this.incomeLevel.diffPercent = (total/(this.shopIncomeLevel.oneLevel+(num+1)*this.shopIncomeLevel.gap)*100).toFixed(2)
         this.incomeLevel.diffPercent = (100-(this.incomeLevel.diffIncome/this.shopIncomeLevel.gap)*100).toFixed(2)
         this.incomeLevel.nowLevel = (num+1)+'档'
         this.incomeLevel.closestLevel = (num+2)+'档'
-        console.log(num)
         // this.incomeLevel.closestLevel =
       }
-      console.log(this.incomeLevel.diffPercent)
+      this.$root.incomeLevelRes[this.$root.shopId]=this.incomeLevel.nowLevel
+      console.log(this.$root.incomeLevelRes)
       return this.incomeLevel.diffPercent
     }
   }
@@ -1129,6 +1150,5 @@ export default {
   .Ing {
     background-color: #9ec3bd;
   }
-
 </style>
 

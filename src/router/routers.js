@@ -78,14 +78,23 @@ export const constantRouterMap = [
         }
       },
       {
-        path: 'appointment',
-        component: (resolve) => require(['@/views/massage/appointment'], resolve),
-        name: 'appointment',
+        path: 'giftVouchers',
+        component: (resolve) => require(['@/views/massage/giftVouchers'], resolve),
+        name: 'giftVouchers',
         meta: {
-          title: '预约信息',
+          title: 'Gift Vouchers',
           icon: 'timing'
         }
       },
+      // {
+      //   path: 'appointment',
+      //   component: (resolve) => require(['@/views/massage/appointment'], resolve),
+      //   name: 'appointment',
+      //   meta: {
+      //     title: '预约信息',
+      //     icon: 'timing'
+      //   }
+      // },
       {
         path: 'record',
         component: (resolve) => require(['@/views/massage/record'], resolve),

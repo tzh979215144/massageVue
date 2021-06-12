@@ -8,6 +8,13 @@ export function getWorkMassagers(data) {
   })
 }
 
+export function getGiftVouchersTotal(data) {
+  return request({
+    url: 'api/massagerAllot/giftVouchers',
+    method: 'put',
+    data
+  })
+}
 export function add(data) {
   return request({
     url: 'api/shopMassager',

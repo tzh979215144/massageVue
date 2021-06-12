@@ -64,7 +64,7 @@ export default {
   data() {
     return {
       filterParam: {
-        shopId: 1,
+        shopId: this.$root.shopId,
         nowDay: new Date()
       },
       openAccountProcessLoading: false,
@@ -102,12 +102,16 @@ export default {
       }
       return result.name
     },
-    initMassager: function(filterParam) {
+    initMassager: function(queryParam) {
+      if (queryParam.shopId !== undefined&&queryParam.shopId !==null) {
+        this.filterParam.shopId = queryParam.shopId
+        this.$root.shopId = queryParam.shopId
+      }
       getShops().then(data => {
         this.shops = data.content
       })
-      getTimeShow(filterParam).then(data => {
-        console.log(filterParam)
+      getTimeShow(queryParam).then(data => {
+        console.log(queryParam)
         for (let i = 0; i < data.length; i++) {
           for (let j = 0; j < data[i].timeLineList.length; j++) {
             data[i].timeLineList[j].startTime = (''+data[i].timeLineList[j].startTime).substr(11,5)

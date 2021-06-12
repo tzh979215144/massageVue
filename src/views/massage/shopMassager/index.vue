@@ -36,25 +36,26 @@
           :max="5"
         />
         <rrOperation :crud="crud" />
-        <el-button type="success" plain round icon="el-icon-check" size="mini" @click="update(query)">更新工资</el-button>
+        <el-button type="success" plain round class="filter-item" icon="el-icon-check" size="mini" @click="update(query)">更新工资</el-button>
+        <label class="el-form-item-label">今日爆档：{{$root.incomeLevelRes[$root.shopId]}}</label>
       </div>
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
       <crudOperation :permission="permission" />
       <!--表单组件-->
       <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="500px">
         <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
-          <el-form-item label="店铺" prop="shopId">
-            <el-select v-model="form.shopId" filterable placeholder="请选择">
-              <el-option
-                v-for="item in shops"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
-          </el-form-item>
+<!--          <el-form-item label="店铺" prop="shopId">-->
+<!--            <el-select v-model="form.shopId" filterable placeholder="请选择">-->
+<!--              <el-option-->
+<!--                v-for="item in shops"-->
+<!--                :key="item.id"-->
+<!--                :label="item.name"-->
+<!--                :value="item.id"-->
+<!--              />-->
+<!--            </el-select>-->
+<!--          </el-form-item>-->
           <el-form-item label="单个按摩师">
-              <el-select v-model="form.massagerId" filterable placeholder="请选择">
+              <el-select v-model="form.massagerId" filterable @change="handleFormShopId(form)" placeholder="请选择">
                 <el-option
                   v-for="item in massagers"
                   :key="item.id"
@@ -65,7 +66,11 @@
           </el-form-item>
           <el-form-item label="批量按摩师">
             <el-checkbox-group v-model="form.massagerIds" @change="handleCheckedCitiesChange">
-              <el-checkbox v-for="item in massagers" :label="item.id" :key="item.id">{{item.name}}</el-checkbox>
+              <el-checkbox
+                v-for="item in massagers" :label="item.id" :key="item.id"
+                @change="handleFormShopId(form)"
+              >{{item.name}}
+              </el-checkbox>
             </el-checkbox-group>
 
           </el-form-item>
@@ -191,8 +196,9 @@ export default {
     this.initMassager(this.query)
   },
   created() {
-    this.query.shopId = 1
+    this.$set(this.query,'shopId',this.$root.shopId)
     this.$set(this.query,'workDate',moment(new Date().setHours(0,0,0)).format('YYYY-MM-DD HH:mm:ss'))
+    this.$set(this.form,'shopId',this.$root.shopId)
   },
   methods: {
     // 钩子：在获取表格数据之前执行，false 则代表不获取数据
@@ -200,9 +206,11 @@ export default {
       return true
     },
     initMassager: function(queryParam) {
-      console.log(queryParam.workDate)
+      if (queryParam.shopId !== undefined && queryParam.shopId !== null) {
+        this.filterParam.shopId = queryParam.shopId
+        this.$root.shopId = queryParam.shopId
+      }
       getMassagers().then(data => {
-        console.log(data)
         this.massagers = data
       })
       getShops().then(data => {
@@ -260,6 +268,10 @@ export default {
         })
       })
       this.crud.crudMethod.refresh()
+    },
+    //将表单店铺id设为全局的shopId
+    handleFormShopId(form) {
+      form.shopId = this.$root.shopId
     },
   }
 }

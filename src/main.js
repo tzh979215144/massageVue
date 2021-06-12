@@ -48,5 +48,12 @@ new Vue({
   el: '#app',
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
+  data () {
+    return {
+      incomeLevelRes: [],
+      // '啊原来没爆啊'
+      shopId: 4
+    }
+  }
 })

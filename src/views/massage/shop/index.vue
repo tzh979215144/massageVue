@@ -5,7 +5,7 @@
       <div v-if="crud.props.searchToggle">
         <!-- 搜索 -->
         <label class="el-form-item-label">店铺名称</label>
-        <el-input v-model="query.name" clearable placeholder="店铺名称" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
+        <el-input v-model="query.name" clearable placeholder="店铺名称" style="width: 185px;" class="filter-item" @change="initMassager(query)" @keyup.enter.native="crud.toQuery" />
         <label class="el-form-item-label">店长ID</label>
         <el-input v-model="query.managerId" clearable placeholder="店长ID" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
         <rrOperation :crud="crud" />
@@ -154,6 +154,7 @@ export default {
   },
   mounted() {
     this.initMassager()
+    this.crud.toQuery()
   },
   methods: {
     // 钩子：在获取表格数据之前执行，false 则代表不获取数据
@@ -162,7 +163,7 @@ export default {
     },
     initMassager: function(queryParam) {
       getMassagers().then(data => {
-        this.massagers = data.content
+        this.massagers = data
       })
     },
     massagerName(id) {
